@@ -1,0 +1,171 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 3551021 */
+  src: url('iconfont.woff2?t=1663150536270') format('woff2'),
+       url('iconfont.woff?t=1663150536270') format('woff'),
+       url('iconfont.ttf?t=1663150536270') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-bold:before {
+  content: "\e7f7";
+}
+
+.icon-italic:before {
+  content: "\e7fb";
+}
+
+.icon-collapse:before {
+  content: "\e615";
+}
+
+.icon-prev:before {
+  content: "\e61b";
+}
+
+.icon-next:before {
+  content: "\e61c";
+}
+
+.icon-expand:before {
+  content: "\e618";
+}
+
+.icon-f-delete:before {
+  content: "\e677";
+}
+
+.icon-f-insert:before {
+  content: "\e678";
+}
+
+.icon-f-last:before {
+  content: "\e68a";
+}
+
+.icon-f-first:before {
+  content: "\e68c";
+}
+
+.icon-f-play:before {
+  content: "\e68d";
+}
+
+.icon-f-prev:before {
+  content: "\e68e";
+}
+
+.icon-f-pause:before {
+  content: "\e68f";
+}
+
+.icon-f-next:before {
+  content: "\e690";
+}
+
+.icon-space:before {
+  content: "\e775";
+}
+
+.icon-mouse-wheel:before {
+  content: "\e6bd";
+}
+
+.icon-mouse-right:before {
+  content: "\e6be";
+}
+
+.icon-mouse-left:before {
+  content: "\e6bf";
+}
+
+.icon-tips:before {
+  content: "\e661";
+}
+
+.icon-preview:before {
+  content: "\e601";
+}
+
+.icon-zoom-fit:before {
+  content: "\e69f";
+}
+
+.icon-position-center:before {
+  content: "\e63d";
+}
+
+.icon-zoom-1:before {
+  content: "\e912";
+}
+
+.icon-zoom-out:before {
+  content: "\e886";
+}
+
+.icon-zoom-in:before {
+  content: "\e887";
+}
+
+.icon-center:before {
+  content: "\e6df";
+}
+
+.icon-edit-image:before {
+  content: "\eba2";
+}
+
+.icon-crop:before {
+  content: "\e650";
+}
+
+.icon-flip:before {
+  content: "\eb63";
+}
+
+.icon-crop-rotate:before {
+  content: "\eba1";
+}
+
+.icon-grid:before {
+  content: "\e838";
+}
+
+.icon-rotate-180:before {
+  content: "\e6a8";
+}
+
+.icon-rotate:before {
+  content: "\e600";
+}
+
+.icon-rotate-right:before {
+  content: "\e683";
+}
+
+.icon-rotate-left:before {
+  content: "\e684";
+}
+
+.icon-openfile:before {
+  content: "\e643";
+}
+
+.icon-setting:before {
+  content: "\e660";
+}
+
+.icon-playfill:before {
+  content: "\e74f";
+}
+
+.icon-stop:before {
+  content: "\e68b";
+}
+

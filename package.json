@@ -1,0 +1,119 @@
+{
+  "name": "iyo-image-converter",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:web\" \"wait-on http://localhost:8080 && npm run dev:nw\"",
+    "build": "npm run build:web && npm run build:nw",
+    "lint": "vue-cli-service lint",
+    "build:nw": "build --tasks win-x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
+    "build:web": "vue-cli-service build",
+    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
+    "dev:nw": "run --x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
+    "dev:web": "vue-cli-service serve"
+  },
+  "main": "http://localhost:8080/main.html",
+  "node-remote": "<all_urls>",
+  "window": {
+    "id": "iyo-image-converter",
+    "width": 1080,
+    "height": 720,
+    "min_width": 720,
+    "min_height": 480,
+    "icon": "icons/icon.png",
+    "title": "　"
+  },
+  "dependencies": {
+    "clone": "^2.1.2",
+    "core-js": "^3.8.3",
+    "element-plus": "^2.2.10",
+    "file-type": "^17.1.6",
+    "fs-extra": "^10.1.0",
+    "nwjs-dialog": "^1.0.6",
+    "sharp": "0.30.7",
+    "sharp-apng": "^0.1.5",
+    "sharp-bmp": "^0.1.5",
+    "sharp-gif2": "^0.1.2",
+    "sharp-ico": "^0.1.5",
+    "vue": "^3.2.13",
+    "vue-i18n": "^9.1.0",
+    "vxe-table": "^4.3.0-beta.3",
+    "vxe-table-plugin-element": "^3.0.5",
+    "xe-utils": "^3.5.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@intlify/vue-i18n-loader": "^3.0.0",
+    "@ssnangua/nwjs-builder-phoenix": "^1.15.5",
+    "@types/clone": "^2.1.1",
+    "@types/nw.js": "^0.13.15",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "concurrently": "^7.3.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "node-loader": "^2.0.0",
+    "vue-cli-plugin-i18n": "~2.3.1",
+    "wait-on": "^6.0.1"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {},
+    "globals": {
+      "nw": "readonly"
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "build": {
+    "nwVersion": "0.68.1",
+    "targets": [
+      "zip",
+      "nsis"
+    ],
+    "output": "./dist-nw/",
+    "files": [
+      "./dist/**/*.!(node)",
+      "./icons/*",
+      "./languages/*",
+      "./node_modules/sharp/build/Release/*.@(node|dll)",
+      "./bin/*"
+    ],
+    "overriddenProperties": {
+      "main": "dist/main.html"
+    },
+    "win": {
+      "productName": "iYoImageConverter",
+      "displayName": "iYo Image Converter",
+      "fileDescription": "https://github.com/ssnangua",
+      "icon": "installer.ico",
+      "runAsAdmin": false
+    },
+    "nsis": {
+      "icon": "installer.ico",
+      "unIcon": "uninstaller.ico",
+      "installerIcon": "installer.ico",
+      "uninstallerIcon": "uninstaller.ico",
+      "languages": [
+        "English",
+        "SimpChinese"
+      ]
+    }
+  }
+}
