@@ -31,8 +31,8 @@ yarn
 
 # rebuild sharp
 cd node_modules\sharp
-nw-gyp configure --target=0.66.1
-nw-gyp build --target=0.66.1
+nw-gyp configure --target=0.68.1
+nw-gyp build --target=0.68.1
 
 # dev (root directory)
 yarn dev
