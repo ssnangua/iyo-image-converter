@@ -3,7 +3,7 @@ node_modules
 .yarn
 /dist
 /dist-nw
-
+setting.json
 
 # local env files
 .env.local
