@@ -1,4 +1,4 @@
-# Iyo Image Converter | 哎哟图片转换器
+# iYo Image Converter | 哎哟图片转换器
 
 A free native image converter | 一个免费的本地图片转换工具
 
