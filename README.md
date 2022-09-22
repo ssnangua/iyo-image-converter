@@ -2,7 +2,7 @@
 
 A free native image converter | 一个免费的本地图片转换工具
 
-![](screenshots/en_convert.jpg)
+<img src="screenshots/en_convert.jpg" width="300" />
 
 Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/).
 

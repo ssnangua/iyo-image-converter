@@ -2,7 +2,7 @@
 
 A free native image converter | 一个免费的本地图片转换工具
 
-![](screenshots/zh_convert.jpg)
+<img src="screenshots/zh_convert.jpg" width="300" />
 
 基于 [sharp](https://sharp.pixelplumbing.com/) 和 [NW.js](https://nwjs.io/)。
 
