@@ -11,7 +11,7 @@ A free native image converter | 一个免费的本地图片转换工具
 ## 特性
 
 - 图片格式转换、图片压缩
-- 调整图片大小、旋转图片
+- 调整图片大小、旋转图片、图片裁剪
 - 添加水印
 - 支持的图片格式: `.png`,`.jpg`,`.jpeg`,`.webp`,`.gif`,`.tif`,`.tiff`,`.avif`,`.heif`,`.bmp`,`.ico`,`.svg`, GIF/WebP/APNG 动图
 - 动图工具

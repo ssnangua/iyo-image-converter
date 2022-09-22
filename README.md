@@ -11,7 +11,7 @@ Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/).
 ## Features
 
 - Convert / Tiny image
-- Resize / Rotate image
+- Resize / Rotate / Crop image
 - Add watermark
 - Support image formats: `.png`,`.jpg`,`.jpeg`,`.webp`,`.gif`,`.tif`,`.tiff`,`.avif`,`.heif`,`.bmp`,`.ico`,`.svg`, animated GIF/WebP/APNG
 - Anime Tool
