@@ -1,4 +1,6 @@
-# 截图
+# iYo Image Converter | 哎哟图片转换器
+
+[下载](https://github.com/ssnangua/iyo-image-converter/releases) | 截图 | [English Document](../README.md) | [中文文档](../README_zh.md)
 
 ## 图片格式转换
 
