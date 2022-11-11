@@ -37,7 +37,7 @@ Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/).
 
 ## Custom Filter
 
-The filter files are in the `root/filters/` directory, and you can write your own filters. See [Custom Filter](./Custom Filter.md).
+The filter files are in the `root/filters/` directory, and you can write your own filters. See [Custom Filter](./Custom-Filter.md).
 
 ## Development
 

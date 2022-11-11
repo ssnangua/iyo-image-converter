@@ -37,7 +37,7 @@ A free native image converter | 一个免费的本地图片转换工具
 
 ## 自定义滤镜
 
-滤镜文件在 `根目录/filters/` 目录下，您可以编写自己的滤镜。参考 [Custom Filter](./Custom Filter.md)。
+滤镜文件在 `根目录/filters/` 目录下，您可以编写自己的滤镜。参考 [Custom Filter](./Custom-Filter.md)。
 
 ## 开发
 
