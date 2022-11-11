@@ -388,11 +388,11 @@ export const formats = [
         //   key: "readApng",
         //   type: "divider",
         // },
-        // {
-        //   key: "transparent",
-        //   type: "boolean",
-        //   default: false,
-        // },
+        {
+          key: "transparent",
+          type: "boolean",
+          default: false,
+        },
         // {
         //   key: "maxColors",
         //   type: "number",
@@ -401,15 +401,15 @@ export const formats = [
         //   min: 1,
         //   max: 256,
         // },
-        // // {
-        // //   key: "repeat",
-        // //   type: "number",
-        // //   input: true,
-        // //   default: 0,
-        // //   step: 1,
-        // //   min: 0,
-        // //   max: 65535,
-        // // },
+        // {
+        //   key: "repeat",
+        //   type: "number",
+        //   input: true,
+        //   default: 0,
+        //   step: 1,
+        //   min: 0,
+        //   max: 65535,
+        // },
         // {
         //   key: "format",
         //   type: "radio",

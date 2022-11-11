@@ -4,28 +4,39 @@ const path = require("path");
 module.exports = defineConfig({
   pages: {
     main: {
-      entry: "src/main.js",
+      entry: "src/main/main.js",
       template: "public/index.html",
       filename: "main.html",
-      title: "　",
     },
-    editor: {
-      entry: "src/editor.js",
+    editImage: {
+      entry: "src/tool-edit-image/editImage.js",
       template: "public/index.html",
-      filename: "editor.html",
-      title: "　",
+      filename: "edit-image.html",
     },
     icoTool: {
-      entry: "src/icoTool.js",
+      entry: "src/tool-ico/icoTool.js",
       template: "public/index.html",
-      filename: "icotool.html",
-      title: "　",
+      filename: "ico-tool.html",
     },
     animeTool: {
-      entry: "src/animeTool.js",
+      entry: "src/tool-anime/animeTool.js",
       template: "public/index.html",
-      filename: "animetool.html",
-      title: "　",
+      filename: "anime-tool.html",
+    },
+    filterTool: {
+      entry: "src/tool-filter/filterTool.js",
+      template: "public/index.html",
+      filename: "filter-tool.html",
+    },
+    pdfTool: {
+      entry: "src/tool-pdf/pdfTool.js",
+      template: "public/index.html",
+      filename: "pdf-tool.html",
+    },
+    mirageTank: {
+      entry: "src/tool-mirage-tank/mirageTank.js",
+      template: "public/index.html",
+      filename: "mirage-tank.html",
     },
   },
 
@@ -34,9 +45,9 @@ module.exports = defineConfig({
   // transpileDependencies: true,
   publicPath: "",
 
-  chainWebpack: (config) => {
-    config.optimization.delete("splitChunks");
-  },
+  // chainWebpack: (config) => {
+  //   config.optimization.delete("splitChunks");
+  // },
 
   configureWebpack: {
     target: "electron-renderer",

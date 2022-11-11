@@ -28,6 +28,10 @@
             <FilePicker
               v-else-if="item.type === 'file'"
               v-model="value[item.key]"
+              :placeholder="$t(`${config.type}.${item.placeholder}`)"
+              :rule="item.rule"
+              :handleOpen="item.handleOpen"
+              :handleDrop="item.handleDrop"
               :options="item.dialog"
             />
             <PosPicker
@@ -129,6 +133,7 @@
             <FilePicker
               v-else-if="item.type === 'file'"
               :model-value="item.lockValue || value[item.key]"
+              :placeholder="$t(`${config.type}.${item.placeholder}`)"
               :options="item.dialog"
             />
             <PosPicker

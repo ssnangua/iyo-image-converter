@@ -5,36 +5,36 @@
         <i class="iconfont icon-setting"></i>
         {{ $t("toolbar.option") }}
       </el-button>
-      <el-button text @click="$emit('show-anime-tool')">
-        <img src="@/assets/anime.png" class="button-icon" />
-        {{ $t("toolbar.animeTool") }}
+      <el-divider direction="vertical" />
+      <el-button text @click="$emit('show-edit-image')">
+        <img src="@/assets/editimage.png" class="button-icon" />
+        <!-- <i class="iconfont icon-edit-image"></i> -->
+        {{ $t("editImage.title") }}
       </el-button>
-      <el-button text @click="$emit('show-ico-tool')">
-        <img src="@/assets/ico.png" class="button-icon" />
-        {{ $t("toolbar.icoTool") }}
+      <el-button text @click="$emit('show-filter-tool')">
+        <img src="@/assets/filter.png" class="button-icon" />
+        <!-- <i class="iconfont icon-filter"></i> -->
+        {{ $t("filterTool.title") }}
       </el-button>
     </span>
     <span>
-      <el-button
-        text
-        :icon="DocumentAdd"
-        :disabled="processing"
-        @click="$emit('add-tasks')"
+      <el-button text :disabled="processing" @click="$emit('add-tasks')"
+        ><i class="iconfont icon-f-insert" style="font-size: 12px"></i
         >{{ $t("toolbar.add") }}</el-button
       >
       <el-divider direction="vertical" />
       <el-button
         text
-        :icon="DocumentRemove"
         :disabled="!hasSelectedTask || processing"
         @click="$emit('remove-tasks')"
+        ><i class="iconfont icon-f-remove" style="font-size: 12px"></i
         >{{ $t("toolbar.remove") }}</el-button
       >
       <el-button
         text
-        :icon="DocumentDelete"
         :disabled="!hasTask || processing"
         @click="$emit('clear-tasks')"
+        ><i class="iconfont icon-f-clear" style="font-size: 12px"></i
         >{{ $t("toolbar.clear") }}</el-button
       >
       <el-divider direction="vertical" />
@@ -66,6 +66,7 @@ import {
   DocumentRemove,
   DocumentDelete,
 } from "@element-plus/icons-vue";
+
 export default {
   name: "HeaderToolbar",
   props: {

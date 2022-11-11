@@ -10,7 +10,10 @@ export const openAcceptRule =
 export const saveAcceptRule =
   /.(jpg|jpeg|png|webp|gif|tif|tiff|avif|heif|bmp|ico)$/i;
 
-async function getImages(files, isReadFolders, images = []) {
+function compareFiles(a, b) {
+  return a.name.length - b.name.length || (a.name > b.name ? 1 : -1);
+}
+export async function getImages(files, isReadFolders, images = []) {
   for (let i = 0, length = files.length; i < length; i++) {
     const file = files[i];
     const stat = await fs.stat(file);
@@ -33,6 +36,7 @@ async function getImages(files, isReadFolders, images = []) {
       }
     }
   }
+  images.sort(compareFiles);
   return images;
 }
 

@@ -6,6 +6,48 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "29522624",
+      "name": "13F关闭",
+      "font_class": "f-clear",
+      "unicode": "e67a",
+      "unicode_decimal": 59002
+    },
+    {
+      "icon_id": "29522617",
+      "name": "13H缩小",
+      "font_class": "f-remove",
+      "unicode": "e679",
+      "unicode_decimal": 59001
+    },
+    {
+      "icon_id": "20402171",
+      "name": "调节配置",
+      "font_class": "options",
+      "unicode": "e6ef",
+      "unicode_decimal": 59119
+    },
+    {
+      "icon_id": "14425284",
+      "name": "help_panel_magic",
+      "font_class": "filter",
+      "unicode": "e66e",
+      "unicode_decimal": 58990
+    },
+    {
+      "icon_id": "634575",
+      "name": "图像_images17",
+      "font_class": "image",
+      "unicode": "e702",
+      "unicode_decimal": 59138
+    },
+    {
+      "icon_id": "634577",
+      "name": "图像_images20",
+      "font_class": "images",
+      "unicode": "e704",
+      "unicode_decimal": 59140
+    },
+    {
       "icon_id": "4767078",
       "name": "bold",
       "font_class": "bold",

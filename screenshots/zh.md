@@ -6,15 +6,21 @@
 
 <img src="zh_convert.jpg" width="600" />
 
-## 修改图片
+## 图片调整
 
 <img src="zh_modifier.jpg" width="600" />
-
-<img src="zh_crop-rotate.jpg" width="600" />
 
 ## 添加水印
 
 <img src="zh_watermark.jpg" width="600" />
+
+## 图片裁剪
+
+<img src="zh_crop-rotate.jpg" width="600" />
+
+## 滤镜工具
+
+<img src="zh_filter-tool.jpg" width="600" />
 
 ## 动图工具
 
@@ -25,3 +31,11 @@
 <img src="zh_ico-tool-generate.jpg" width="600" />
 
 <img src="zh_ico-tool-extract.jpg" width="600" />
+
+## PDF工具
+
+<img src="zh_pdf-tool.jpg" width="600" />
+
+## 幻影坦克
+
+<img src="zh_mirage-tank.jpg" width="600" />

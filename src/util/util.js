@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs-extra";
 
 export function getCurrentScreen() {
   for (let screen of nw.Screen.screens) {
@@ -70,8 +71,8 @@ export function parseColor(c) {
 const baseURL =
   location.protocol === "chrome-extension:" ? "/dist" : location.origin;
 const winMap = {};
-export function openPage(page, searches, options, callback) {
-  const id = options?.id;
+export function openPage(page, searches, options = {}) {
+  const { id } = options;
   const win = id && winMap[id];
   if (win) {
     if (typeof win === "object") win.focus();
@@ -85,7 +86,13 @@ export function openPage(page, searches, options, callback) {
   }
   nw.Window.open(
     url,
-    { ...options, position: "center", show: false },
+    {
+      ...options,
+      position: "center",
+      show: false,
+      new_instance: true,
+      mixed_context: true,
+    },
     (win) => {
       win.on("loaded", () => {
         win.show();
@@ -95,9 +102,20 @@ export function openPage(page, searches, options, callback) {
         winMap[id] = win;
         win.on("closed", () => delete winMap[id]);
       }
-      if (typeof callback === "function") callback(win);
     }
   );
+}
+
+export function getOutputPath(outputPath) {
+  const { dir, name, ext } = path.parse(outputPath);
+  let output = outputPath;
+  let temp = name;
+  while (fs.existsSync(output)) {
+    const index = Number((/~(\d+)$/.test(temp) && RegExp.$1) || 0) + 1;
+    temp = `${name}~${index}`;
+    output = path.join(dir, temp + ext);
+  }
+  return output;
 }
 
 export function getSearches(url) {
@@ -112,17 +130,18 @@ export function getSearches(url) {
     }, {});
 }
 
-const preventDefault = (e) => {
+function preventDefault(e) {
   e.preventDefault();
   e.stopPropagation();
   return false;
-};
+}
 export function handleDropFiles(callback) {
   window.addEventListener("dragenter", preventDefault);
   window.addEventListener("dragover", preventDefault);
   window.addEventListener("dragleave", preventDefault);
   window.addEventListener("drop", preventDefault);
   window.addEventListener("drop", (e) => {
-    callback(Array.from(e.dataTransfer.files));
+    const files = Array.from(e.dataTransfer.files);
+    callback(files);
   });
 }

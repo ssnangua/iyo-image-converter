@@ -1,7 +1,10 @@
 import { ElLoading, ElMessage } from "element-plus";
 
 export function showLoading(options) {
-  return ElLoading.service(options);
+  return ElLoading.service({
+    background: "rgba(0, 0, 0, 0.7)",
+    ...options,
+  });
 }
 
 export function showSuccess(message) {

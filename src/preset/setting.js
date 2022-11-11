@@ -117,7 +117,7 @@ export const defaultSetting = {
     transparent: false,
     maxColors: 256,
     repeat: 0,
-    format: "rgb565",
+    // format: "rgba4444",
     lossless: false,
     cnum: 256,
   },

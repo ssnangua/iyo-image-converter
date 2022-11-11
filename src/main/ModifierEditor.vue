@@ -185,16 +185,7 @@ import { MoreFilled } from "@element-plus/icons-vue";
 import clone from "clone";
 import FitPicker from "@/component/FitPicker.vue";
 import ColorPicker from "@/component/ColorPicker.vue";
-import Contextmenu from "@/contextmenu/contextmenu";
-import {
-  resizePixels,
-  resizePercent,
-  rotateAngles,
-} from "@/contextmenu/modifier";
-
-const pixelsMenu = new Contextmenu(resizePixels);
-const percentMenu = new Contextmenu(resizePercent);
-const anglesMenu = new Contextmenu(rotateAngles);
+import { pixelsMenu, percentMenu, anglesMenu } from "./contextmenu";
 
 export default {
   name: "ModifierEditor",

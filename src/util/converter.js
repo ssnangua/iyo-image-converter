@@ -6,6 +6,7 @@ import BMP from "sharp-bmp";
 import ICO from "sharp-ico";
 import GIF from "sharp-gif2";
 import APNG from "sharp-apng";
+import UPNG from "upng-js";
 import { formatsMap } from "@/preset/formats";
 import { comparePaths, formatDate, isUndefined } from "./util";
 import { openAcceptRule } from "./imageFiles";
@@ -24,22 +25,57 @@ export function framesFromIco(input, options, resolveWithObject = true) {
   return icons;
 }
 
-export async function getInput(task, options) {
-  if (task.ext === "bmp") {
-    // @see https://github.com/lovell/sharp/issues/806#issuecomment-419661745
-    return BMP.sharpFromBmp(task.input);
-  }
-  if (task.ext === "ico") {
-    // @see https://github.com/lovell/sharp/issues/1118#issuecomment-1205599759
-    return framesFromIco(task.input, options, false)[0];
-  }
-  if (task.ext === "apng") {
-    return APNG.sharpFromApng(task.input, options);
-  }
-  return sharp(task.input, {
-    animated: task.animated && task.toAnimated,
-    ...options,
+// Decode APNG image and return the first frame
+function getApngFirstFrame(input) {
+  const buffer = typeof input === "string" ? fs.readFileSync(input) : input;
+  const decoder = UPNG.decode(buffer);
+  const frames = UPNG.toRGBA8(decoder);
+  return sharp(Buffer.from(frames[0]), {
+    raw: {
+      width: decoder.width,
+      height: decoder.height,
+      channels: 4,
+    },
   });
+}
+
+export async function isAnimated(input, ext) {
+  return (
+    ext === "apng" ||
+    ((ext === "gif" || ext === "webp") &&
+      (await sharp(input).metadata()).pages > 1)
+  );
+}
+
+export async function getSharp(task, options) {
+  if (typeof task === "string") task = { input: task };
+  let { input, ext, animated, toAnimated } = task;
+  if (!ext) ext = (await fileTypeFromFile(input)).ext;
+  animated = animated && toAnimated;
+
+  if (ext === "bmp") {
+    // @see https://github.com/lovell/sharp/issues/806#issuecomment-419661745
+    return BMP.sharpFromBmp(input);
+  }
+  if (ext === "ico") {
+    // @see https://github.com/lovell/sharp/issues/1118#issuecomment-1205599759
+    return framesFromIco(input, options, false)[0];
+  }
+  if (ext === "apng") {
+    return animated
+      ? APNG.sharpFromApng(input, {
+          ...options,
+          format: options?.transparent ? "rgba444" : "rgb565",
+        })
+      : getApngFirstFrame(input);
+  }
+  if ((ext === "gif" || ext === "webp") && !animated) {
+    // const reader = GIF.readGif(sharp(input, options));
+    // const frames = await reader.toFrames();
+    // return frames[0];
+    return sharp(input, { animated: false, pages: 1, page: 0, ...options });
+  }
+  return sharp(input, { animated, ...options });
 }
 
 function getOutputFolder(task) {
@@ -75,7 +111,7 @@ function getOutputPath(
   return output;
 }
 
-async function rotateImage(image, task, angle, background) {
+export async function rotateImage(image, task, angle, background) {
   const transparent = typeof background === "object";
   // Sharp rotate is not supporte for multi-page images
   if (task.animated && task.toAnimated) {
@@ -88,7 +124,11 @@ async function rotateImage(image, task, angle, background) {
         return sharp(await frame.toBuffer());
       })
     );
-    const gif = await reader.toGif({ transparent, delay });
+    const gif = await reader.toGif({
+      transparent,
+      format: transparent ? "rgba4444" : "rgb565",
+      delay,
+    });
     image = await gif.toSharp();
   } else {
     if (transparent) {
@@ -110,7 +150,7 @@ async function setModifier(image, task) {
 
   // rotate
   const { enableRotate, angle, flop, flip } = task.modifier;
-  if (!task.edit && enableRotate) {
+  if (enableRotate) {
     if (angle !== 0) image = await rotateImage(image, task, angle, background);
     if (flop) image.flop();
     if (flip) image.flip();
@@ -145,36 +185,6 @@ async function setModifier(image, task) {
   return image;
 }
 
-async function setEditor(image, task) {
-  if (task.edit) {
-    const { zoom, crop, rotateType, rotate, flip, flop } = task.edit;
-    const background = task.edit.background || { r: 0, g: 0, b: 0, alpha: 0 };
-
-    const angle = rotateType === "any" ? rotate : +rotateType;
-    if (angle !== 0) image = await rotateImage(image, task, angle, background);
-    if (flop) image.flop();
-    if (flip) image.flip();
-
-    if (angle !== 0 || flop || flip) {
-      image = sharp(await image.toBuffer(), {
-        animated: task.animated && task.toAnimated,
-      });
-    }
-
-    const { width, height, left, top } = crop;
-    if (width > 0 && height > 0) {
-      image.extract({
-        left: Math.floor(left / zoom),
-        top: Math.floor(top / zoom),
-        width: Math.floor(width),
-        height: Math.floor(height),
-      });
-    }
-  }
-
-  return image;
-}
-
 async function setWatermark(image, task) {
   const { enable, image: input } = task.watermark;
   if (!enable || !input || !fs.existsSync(input)) return;
@@ -188,7 +198,7 @@ async function setWatermark(image, task) {
   height = pageHeight || height;
 
   // watermark
-  const watermark = await getInput({ ext, input });
+  const watermark = await getSharp({ ext, input });
   const meta = await watermark.metadata();
   const boundWidth = width - marginX;
   const boundHeight = height - marginY;
@@ -229,7 +239,7 @@ async function setWatermark(image, task) {
   ]);
 }
 
-const ext2type = { jpg: "jpeg" };
+export const ext2type = { jpg: "jpeg" };
 
 /**
  * convert image
@@ -239,14 +249,13 @@ async function convert(setting, task, fileOut, input) {
 
   const inputOptions =
     task.inputOptions || setting[ext2type[task.ext] || task.ext];
-  let image =
-    input ||
-    (task.ext === "ico" && task.rawOrTiny
-      ? framesFromIco(task.input, inputOptions, false)
-      : await getInput(task, inputOptions));
 
-  // edit
-  image = await setEditor(image, task);
+  if (type === "ico" && task.ext === "ico" && task.rawOrTiny) {
+    const images = framesFromIco(task.input, inputOptions, false);
+    return ICO.sharpsToIco(images, fileOut);
+  }
+
+  let image = input || (await getSharp(task, inputOptions));
 
   // modifier
   image = await setModifier(image, task);
@@ -258,7 +267,7 @@ async function convert(setting, task, fileOut, input) {
   }
 
   // watermark
-  if (type !== "ico") {
+  if (task.ext !== "ico" && type !== "ico") {
     await setWatermark(image, task);
   }
 
@@ -268,15 +277,11 @@ async function convert(setting, task, fileOut, input) {
 
   if (type === "ico") {
     const { includeSizes: sizes, kernel } = task.options;
-    if (task.ext === "ico" && task.rawOrTiny) {
-      return ICO.sharpsToIco(image, fileOut);
-    } else {
-      return ICO.sharpsToIco(
-        [image],
-        fileOut,
-        sizes.length > 0 ? { sizes, resizeOptions: { kernel } } : undefined
-      );
-    }
+    return ICO.sharpsToIco(
+      [image],
+      fileOut,
+      sizes.length > 0 ? { sizes, resizeOptions: { kernel } } : undefined
+    );
   }
 
   if (type === "apng") {
@@ -388,9 +393,11 @@ let processing = false;
 export default {
   async start(setting, tasks, progress, vue) {
     processing = true;
+
     for (let i = 0, length = tasks.length; i < length; i++) {
       if (processing === false) return;
       const task = tasks[i];
+
       if (task.state === "waiting") {
         task.state = "processing";
         progress(i, length, task);
@@ -407,10 +414,7 @@ export default {
         }
 
         if (isUndefined(task.animated)) {
-          task.animated =
-            task.ext === "apng" ||
-            ((task.ext === "gif" || task.ext === "webp") &&
-              (await sharp(task.input).metadata()).pages > 1);
+          task.animated = await isAnimated(task.input, task.ext);
         }
 
         const { type } = task.format;
@@ -473,9 +477,13 @@ export async function getImageInfo(filePath) {
   if (ext === "apng") {
     pages = APNG.framesFromApng(filePath).length;
   }
+  const {dir, base, name} = path.parse(filePath);
   return {
-    filename: path.basename(filePath),
     location: filePath,
+    dirname: dir,
+    filename: base,
+    name,
+    ext,
     type: ext.toUpperCase(),
     size: stat.size,
     date: formatDate(stat.mtime),
@@ -553,16 +561,20 @@ export async function sharpToFile(
       frame.ensureAlpha().flatten({ background: extendBackground });
     });
   }
-  const image = imageData.image || frames[0].clone();
+  let image = imageData.image || frames[0].clone();
 
   if (!image) return Promise.reject("SharpToFile Error: No image.");
 
-  if (fileOut.endsWith(".bmp")) {
+  if (/\.bmp$/i.test(fileOut)) {
     return BMP.sharpToBmp(image, fileOut);
   }
 
-  if (fileOut.endsWith(".ico")) {
-    return ICO.sharpsToIco(frames || [image], fileOut, options);
+  if (/\.ico$/i.test(fileOut)) {
+    return ICO.sharpsToIco(
+      frames || [image],
+      fileOut,
+      frames ? undefined : options
+    );
   }
 
   if (/\.(gif|webp)$/i.test(fileOut)) {
@@ -573,23 +585,29 @@ export async function sharpToFile(
     ) {
       return image.gif(options.sharpOptions).toFile(fileOut);
     } else {
-      const gif = await GIF.createGif(options)
+      const gif = await GIF.createGif({
+        ...options,
+        format: transparent ? "rgba4444" : "rgb565",
+      })
         .addFrame(frames)
         .toSharp(progress);
       return gif.gif(options.sharpOptions).toFile(fileOut);
     }
   }
 
-  if (fileOut.endsWith(".png")) {
+  if (/\.png$/i.test(fileOut)) {
     const { height, pageHeight } = await image.metadata();
     if (pageHeight && height !== pageHeight && frames.length < 2) {
       frames = await GIF.readGif(image).toFrames();
     }
     if (frames.length > 1) {
       return APNG.framesToApng(frames, fileOut, options);
-    } else {
-      return image.toFile(fileOut);
     }
+  }
+
+  // Create a copy to ensure the input file can be overwritten
+  if (fs.existsSync(fileOut)) {
+    image = sharp(await image.toBuffer());
   }
 
   return image.toFile(fileOut);

@@ -22,6 +22,7 @@
 </template>
 
 <script>
+import fs from "fs-extra";
 import { shallowRef } from "vue";
 import { FolderOpened } from "@element-plus/icons-vue";
 import { showOpenDialog } from "nwjs-dialog";
@@ -40,6 +41,9 @@ export default {
     options: {
       type: Object,
       default: () => ({}),
+    },
+    rule: {
+      type: Function,
     },
     handleOpen: {
       type: Function,
@@ -79,13 +83,17 @@ export default {
       });
     },
     onDrop(e) {
+      this.dragenter = false;
       const filePath = e.dataTransfer.files[0].path;
+      const { nwdirectory } = this.options;
+      const isDir = fs.statSync(filePath).isDirectory();
+      if ((nwdirectory && !isDir) || (!nwdirectory && isDir)) return;
+      if (this.rule && !this.rule(filePath)) return;
       if (this.handleDrop) this.handleDrop(filePath);
       else {
         this.$emit("update:modelValue", filePath);
         this.$emit("change", filePath);
       }
-      this.dragenter = false;
     },
   },
 };

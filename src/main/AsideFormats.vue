@@ -17,8 +17,7 @@
 
 <script>
 import AsideFormatIcon from "./AsideFormatIcon.vue";
-import Contextmenu from "@/contextmenu/contextmenu";
-import { foramtItems } from "@/contextmenu/format";
+import { formatMenu } from "./contextmenu";
 
 export default {
   name: "AsideFormats",
@@ -33,7 +32,7 @@ export default {
     onFormatContextmenu(format, $event) {
       this.$emit("format-changed", format);
       if (format.editor) {
-        this.contextmenu.popup($event, ({ cmd }) => {
+        formatMenu.popup($event, ({ cmd }) => {
           // console.log(cmd, format);
           if (cmd === "globalSetting") {
             this.$emit("format-setting", format);
@@ -42,9 +41,6 @@ export default {
         $event.preventDefault();
       }
     },
-  },
-  created() {
-    this.contextmenu = new Contextmenu(foramtItems);
   },
 };
 </script>

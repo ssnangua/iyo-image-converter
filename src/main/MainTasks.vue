@@ -56,15 +56,6 @@
               :title="$t('tasks.imageFileInfo')"
               @click.stop="onImageInfo(row.input)"
             ></el-button>
-            <el-button
-              size="small"
-              key="input-image-crop"
-              :disabled="processing || row.state !== 'waiting'"
-              :title="$t('tasks.editImage')"
-              @click.stop="onEditImage(row)"
-            >
-              <i class="iconfont icon-edit-image"></i>
-            </el-button>
           </span>
         </div>
       </template>
@@ -184,14 +175,10 @@ import {
   Top,
   Bottom,
 } from "@element-plus/icons-vue";
-import Contextmenu from "@/contextmenu/contextmenu";
-import { taskItems, multiTasksItems } from "@/contextmenu/task";
+import { taskMenu, multiTasksMenu } from "./contextmenu";
 import fs from "fs-extra";
-import { humanFileSize, openPage } from "@/util/util";
+import { humanFileSize } from "@/util/util";
 import { getImageInfo } from "@/util/converter";
-
-const taskMenu = new Contextmenu(taskItems);
-const multiTasksMenu = new Contextmenu(multiTasksItems);
 
 let lastSelectIndex = -1;
 let selectedCount = 0;
@@ -301,7 +288,6 @@ export default {
       const completed = task.state === "completed";
       const failed = task.state === "failed";
       return {
-        editImage: !processing && waiting,
         outputSetting: !processing && waiting,
         viewOutputFile: completed,
         viewOutputFileInfo: completed,
@@ -317,9 +303,6 @@ export default {
       switch (cmd) {
         case "outputSetting":
           this.$emit("output-setting", tasks);
-          break;
-        case "editImage":
-          this.onEditImage(task);
           break;
         case "viewSourceFile":
           this.viewFile(task.input);
@@ -361,9 +344,8 @@ export default {
     },
 
     selectAll() {
-      Object.keys(this.selectMap).forEach((index) => {
-        this.selectMap[index] = true;
-      });
+      const selectMap = this.selectMap;
+      Object.keys(selectMap).forEach((key) => (selectMap[key] = true));
       selectedCount = this.tasks.length;
       lastSelectIndex = this.tasks.length - 1;
       this.$emit("selected-changed", selectedCount);
@@ -460,23 +442,12 @@ export default {
         });
     },
 
-    onEditImage(task) {
+    checkInput(task) {
       if (!fs.existsSync(task.input)) {
         alert(this.$t("message.notExist", { path: task.input }));
-        return;
+        return false;
       }
-      openPage(
-        "editor.html",
-        {
-          locale: this.$i18n.locale,
-          taskKey: task.key,
-        },
-        {
-          title: this.$t("editor.editImage"),
-          min_width: 480,
-          min_height: 400,
-        }
-      );
+      return true;
     },
 
     onShowError(task) {
@@ -501,6 +472,8 @@ export default {
       const isCtrl = event.ctrlKey || event.metaKey;
       if (isCtrl && event.code === "KeyA") {
         this.selectAll();
+      } else if (event.code === "Delete") {
+        this.$emit("remove-task", this.getSelectedTasks());
       }
     });
   },

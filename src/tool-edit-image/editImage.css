@@ -1,0 +1,318 @@
+* {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.window {
+  width: calc(100vw - 20px);
+  height: calc(100vh - 20px);
+  background-color: #f2f3f5;
+  overflow: hidden;
+  padding: 10px;
+}
+
+.cropper {
+  position: relative;
+  background-color: #cdd0d6;
+  outline: 1px solid #a8abb2;
+  width: calc(100vw - 20px);
+  height: calc(100vh - 204px);
+  overflow: hidden;
+}
+.cropper .cropper-container {
+  overflow: hidden;
+  width: calc(100vw - 20px);
+  height: calc(100vh - 204px);
+}
+.vue-cropper {
+  width: calc(100vw - 20px);
+  height: calc(100vh - 204px);
+}
+.cropper .cropper-canvas {
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC);
+}
+.cropper .cropper-center {
+  margin-left: 0.5px;
+  margin-top: 0.5px;
+}
+.cropper .cropper-point,
+.cropper .cropper-line,
+.cropper .cropper-dashed,
+.cropper .cropper-center {
+  opacity: 0;
+}
+.cropper.grid .cropper-point,
+.cropper.grid .cropper-line {
+  opacity: 1;
+}
+.cropper.grid .cropper-dashed,
+.cropper.grid .cropper-center {
+  opacity: 0.75;
+  image-rendering: pixelated;
+}
+.cropper .cropper-view-box {
+  outline-color: rgba(238, 238, 238, 0);
+}
+.cropper.grid .cropper-view-box {
+  outline-color: rgba(238, 238, 238, 0.75);
+}
+.cropper .cropper-modal {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.6);
+}
+.cropper.rotate .cropper-point,
+.cropper.rotate .cropper-line,
+.cropper.rotate .cropper-dashed,
+.cropper.rotate .cropper-center {
+  opacity: 0;
+}
+.cropper.rotate .cropper-view-box {
+  outline-color: rgba(238, 238, 238, 0);
+}
+.cropper.rotate .cropper-container {
+  pointer-events: none;
+}
+.cropper.dragging,
+.cropper.dragging .cropper-crop,
+.cropper.dragging .cropper-move,
+.cropper.dragging .cropper-line,
+.cropper.dragging .cropper-point {
+  cursor: grabbing;
+}
+
+.cropper.grid .cropper-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.75;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(#eee 0 1px, transparent 1px 100%),
+    repeating-linear-gradient(90deg, #eee 0 1px, transparent 1px 100%);
+  image-rendering: pixelated;
+}
+
+.cropper.grid.grid-dark .cropper-view-box,
+.cropper.grid.grid-dark .cropper-dashed,
+.cropper.grid.grid-dark .cropper-center,
+.cropper.grid.grid-dark .cropper-grid {
+  mix-blend-mode: difference;
+}
+
+.cropper .cropper-line {
+  background: none;
+}
+
+.cropper .cropper-point {
+  width: 8px;
+  height: 8px;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 100%;
+}
+.cropper .cropper-point.point-nw {
+  top: -6px;
+  left: -6px;
+}
+.cropper .cropper-point.point-n {
+  top: -6px;
+  margin-left: -4px;
+}
+.cropper .cropper-point.point-ne {
+  top: -6px;
+  right: -6px;
+}
+.cropper .cropper-point.point-w {
+  left: -6px;
+  margin-top: -4px;
+}
+.cropper .cropper-point.point-e {
+  right: -6px;
+  margin-top: -4px;
+}
+.cropper .cropper-point.point-sw {
+  bottom: -6px;
+  left: -6px;
+}
+.cropper .cropper-point.point-s {
+  bottom: -6px;
+  margin-left: -4px;
+}
+.cropper .cropper-point.point-se {
+  bottom: -6px;
+  right: -6px;
+}
+
+.cropper.preview .cropper-modal {
+  background: #000 !important;
+}
+.cropper.preview.preview-light .cropper-modal {
+  background: #fff !important;
+}
+.cropper.preview .cropper-view-box {
+  outline: none;
+}
+.cropper.preview .cropper-face {
+  background: none;
+}
+.cropper.preview .cropper-point,
+.cropper.preview .cropper-dashed,
+.cropper.preview .cropper-center,
+.cropper.preview .cropper-grid {
+  display: none;
+}
+.cropper.cropping .cropper-point {
+  opacity: 0;
+}
+
+.cropper.move-mode {
+  cursor: grab;
+}
+.cropper.move-mode:active {
+  cursor: grabbing;
+}
+.cropper.move-mode .cropper-container {
+  pointer-events: none;
+}
+
+.toolbar {
+  height: 90px;
+  margin: 10px 0;
+  flex-shrink: 0;
+}
+.modes {
+  margin-bottom: 10px;
+  height: 22px;
+  white-space: nowrap;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+}
+.tip {
+  flex: auto;
+  font-size: 12px;
+  color: #909399;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tips {
+  font-size: 12px;
+  margin-right: 10px;
+  float: right;
+  line-height: 32px;
+}
+.tips-dialog {
+  max-width: 600px;
+}
+.tips-dialog .el-dialog__body {
+  padding-top: 0;
+}
+.keyboard {
+  display: inline-block;
+  border: 1px solid #cdd0d6;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+.keyboard.square {
+  width: 16px;
+  padding: 2px;
+  text-align: center;
+}
+.keyboard + .keyboard {
+  margin-left: 2px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  color: #606266;
+  border: 1px solid rgba(0, 0, 0, 0);
+  align-items: center;
+  justify-content: center;
+  image-rendering: pixelated;
+  transition: 0.1s;
+}
+.icon-btn.border {
+  border-color: #a8abb2;
+}
+.icon-btn:hover {
+  background-color: #dcdfe6;
+}
+.icon-btn:active {
+  background-color: #cdd0d6;
+}
+.icon-btn.active {
+  background-color: #c6e2ff;
+  border-color: #409eff;
+}
+.icon-btn.disabled {
+  background: none;
+  border-color: #a8abb2;
+  pointer-events: none;
+  opacity: 0.5;
+}
+.icon-btn + .icon-btn {
+  margin-left: 4px;
+}
+
+.label {
+  font-size: 14px;
+  color: #606266;
+  margin-right: 10px;
+  line-height: 32px;
+  white-space: nowrap;
+}
+
+.el-radio__label,
+.el-checkbox__label {
+  padding-left: 4px;
+}
+.el-radio,
+.el-checkbox {
+  margin-right: 20px;
+}
+
+.el-button {
+  cursor: default;
+  min-width: 60px;
+}
+.el-button + .el-button {
+  margin-left: 10px;
+}
+
+.footer {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+}
+.footer-append {
+  display: inline-flex;
+  flex: auto;
+  margin-right: 10px;
+}
+.outerDarkness {
+  display: inline-block;
+  width: 100%;
+  max-width: 200px;
+  margin: 0 10px;
+}
+
+.no-image {
+  font-size: 14px;
+  color: #606266;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
