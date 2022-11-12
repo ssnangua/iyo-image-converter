@@ -1,5 +1,12 @@
+import path from "path";
 import i18n from "@/i18n";
 import { watch } from "vue";
+
+const platform = process.platform;
+const isMac = platform === "darwin";
+
+const cwd = process.cwd();
+const getIcon = (icon) => path.join(cwd, icon);
 
 window.addEventListener("contextmenu", (e) => {
   if (e.target.tagName !== "INPUT") {
@@ -27,8 +34,9 @@ export default class {
         const { item, menuItem } = this.cmdMap[cmd];
         menuItem.enabled = enabled;
         if (item.icon) {
-          menuItem.icon =
-            "icons/" + item.icon + (enabled ? "" : "-off") + ".png";
+          const off = enabled ? "" : "-off";
+          const icon = `icons/${platform}/${item.icon}${off}.png`;
+          menuItem.icon = getIcon(icon);
         }
       });
     }
@@ -44,8 +52,8 @@ export default class {
           option.label = i18n.global.t(item.labelKey);
         }
         if (item.icon) {
-          if (option.label) option.label = " " + option.label;
-          option.icon = "icons/" + item.icon + ".png";
+          if (option.label && !isMac) option.label = " " + option.label;
+          option.icon = getIcon(`icons/${platform}/${item.icon}.png`);
         }
         option.click = () => this.callback(item, this.data);
         if (item.submenu) {

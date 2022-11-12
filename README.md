@@ -15,25 +15,25 @@ Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/).
 - Add watermark
 - Supported image formats: `.png`,`.jpg`,`.jpeg`,`.webp`,`.gif`,`.tif`,`.tiff`,`.avif`,`.heif`,`.bmp`,`.ico`,`.svg`, animated GIF/WebP/APNG
 - Edit Image
-    - Crop image
-    - Rotate image
-    - Supportted animated image
+  - Crop image
+  - Rotate image
+  - Supportted animated image
 - Filter Tool
-    - Supportted animated image
-    - Supportted custom filters
+  - Supportted animated image
+  - Supportted custom filters
 - Anime Tool
-    - Create animated image
-    - Add text
-    - Extract frames
+  - Create animated image
+  - Add text
+  - Extract frames
 - ICO Tool
-    - Create multi-size `.ico` image
-    - Extract frames
-    - Extract `.ico` image from `.exe`,`.dll`,`.ocx`,`.cpl` file
+  - Create multi-size `.ico` image
+  - Extract frames
+  - Extract `.ico` image from `.exe`,`.dll`,`.ocx`,`.cpl` file
 - PDF Tool
-    - Export images from a PDF file
-    - Generate a PDF file from images
+  - Export images from a PDF file
+  - Generate a PDF file from images
 - Mirage Tank
-    - A simple way to generate a mirage-tank image
+  - A simple way to generate a mirage-tank image
 
 ## Custom Filter
 
@@ -42,19 +42,23 @@ The filter files are in the `root/filters/` directory, and you can write your ow
 ## Development
 
 ```bash
-# install
-yarn
+# install (Windows)
+npm install
+# install (Mac)
+npm install --build-from-source
 
 # rebuild sharp
-cd node_modules\sharp
-nw-gyp configure --target=0.68.1
-nw-gyp build --target=0.68.1
+cd node_modules/sharp
+npx nw-gyp configure --target=0.68.1
+npx nw-gyp build --target=0.68.1
 
 # dev (root directory)
-yarn dev
+npm run dev
 
-# build
-yarn build
+# build (root directory)
+npm run build
+# after build (Mac)
+chmod +x dist-nw/iyo-image-converter-${version}-mac-x64/iYo\ Image\ Converter.app/Contents/Resources/app.nw/bin/*
 ```
 
 ## Reference

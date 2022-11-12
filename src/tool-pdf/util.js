@@ -1,4 +1,5 @@
 import path from "path";
+import url from "url";
 import fs from "fs-extra";
 import sharp from "sharp";
 import PDF from "sharp-pdf";
@@ -21,7 +22,7 @@ export function extractImages(pdfPath, outputFolder, password, vue) {
 
   PDF.sharpsFromPdf(
     {
-      url: pdfPath,
+      url: url.pathToFileURL(pdfPath).toString(),
       password,
     },
     {

@@ -152,7 +152,7 @@ export const defaultSetting = {
   },
 };
 
-const settingFile = path.resolve("./setting.json");
+const settingFile = path.join(nw.App.dataPath, "setting.json");
 let setting = defaultSetting;
 try {
   if (fs.existsSync(settingFile)) {

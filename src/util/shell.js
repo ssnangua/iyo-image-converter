@@ -1,12 +1,14 @@
 import path from "path";
 import fs from "fs-extra";
-import { exec } from "child_process";
+import { exec, execFile } from "child_process";
 import { promisify } from "util";
 
 const execp = promisify(exec);
 
+const cwd = process.cwd();
 const bin = {
-  iconsext: "bin/iconsext.exe",
+  iconsext: path.join(cwd, "bin/iconsext.exe"),
+  fontlist: path.join(cwd, "bin/fontlist"),
 };
 
 // https://www.nirsoft.net/utils/iconsext.html
@@ -41,11 +43,55 @@ export function getShortcutTarget(lnkFile = "") {
 
 // https://github.com/oldj/node-font-list/blob/master/libs/win32/getByPowerShell.js
 const listFontCmd = `chcp 65001|powershell -command "chcp 65001|Out-Null;Add-Type -AssemblyName PresentationCore;$families=[Windows.Media.Fonts]::SystemFontFamilies;foreach($family in $families){$name='';if(!$family.FamilyNames.TryGetValue([Windows.Markup.XmlLanguage]::GetLanguage('zh-cn'),[ref]$name)){$name=$family.FamilyNames[[Windows.Markup.XmlLanguage]::GetLanguage('en-us')]}echo $name}"`;
-export function listFont() {
+export function listFontWin32() {
   return execp(listFontCmd).then(({ stdout }) => {
     return stdout
       .split("\n")
       .map((ln) => ln.trim())
       .filter((f) => !!f);
   });
+}
+
+// https://github.com/oldj/node-font-list/blob/master/libs/darwin/index.js
+const font_exceptions = ["iconfont"];
+function tryToGetFonts(s) {
+  let fonts = [];
+  let m = s.match(/\(([\s\S]+)\)/);
+  if (m) {
+    fonts = m[1]
+      .split("\n")
+      .map((i) => i.trim())
+      .map((i) => i.replace(/,$/, ""));
+  }
+  return fonts;
+}
+function listFontDarwin() {
+  return new Promise((resolve, reject) => {
+    execFile(
+      bin.fontlist,
+      { maxBuffer: 1024 * 1024 * 10 },
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        let fonts = [];
+        if (stdout) {
+          fonts = fonts.concat(tryToGetFonts(stdout));
+        }
+        if (stderr) {
+          fonts = fonts.concat(tryToGetFonts(stderr));
+        }
+        fonts = Array.from(new Set(fonts)).filter(
+          (i) => i && !font_exceptions.includes(i)
+        );
+        resolve(fonts);
+      }
+    );
+  });
+}
+
+export function listFont() {
+  if (process.platform === "darwin") return listFontDarwin();
+  else return listFontWin32();
 }

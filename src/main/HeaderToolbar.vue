@@ -16,6 +16,7 @@
         <!-- <i class="iconfont icon-filter"></i> -->
         {{ $t("filterTool.title") }}
       </el-button>
+      <el-button text :icon="MoreFilled" @click="$emit('show-more-tools', $event)"></el-button>
     </span>
     <span>
       <el-button text :disabled="processing" @click="$emit('add-tasks')"
@@ -65,6 +66,7 @@ import {
   DocumentAdd,
   DocumentRemove,
   DocumentDelete,
+  MoreFilled,
 } from "@element-plus/icons-vue";
 
 export default {
@@ -79,6 +81,7 @@ export default {
       DocumentAdd: shallowRef(DocumentAdd),
       DocumentRemove: shallowRef(DocumentRemove),
       DocumentDelete: shallowRef(DocumentDelete),
+      MoreFilled: shallowRef(MoreFilled),
     };
   },
 };

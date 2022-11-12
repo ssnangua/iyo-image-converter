@@ -94,6 +94,10 @@ export function openPage(page, searches, options = {}) {
       mixed_context: true,
     },
     (win) => {
+      const { resizable, width, height } = options;
+      if (resizable === false && width && height) {
+        win.resizeTo(width, height);
+      }
       win.on("loaded", () => {
         win.show();
         win.focus();

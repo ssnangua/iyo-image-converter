@@ -1,6 +1,30 @@
 import Contextmenu from "@/util/contextmenu";
 import { formats } from "@/preset/formats";
 
+const isMac = process.platform === "darwin";
+const moreToolsItems = [
+  {
+    labelKey: "animeTool.title",
+    icon: isMac ? "" : "anime",
+    cmd: "animeTool",
+  },
+  {
+    labelKey: "icoTool.title",
+    icon: isMac ? "" : "ico",
+    cmd: "icoTool",
+  },
+  {
+    labelKey: "pdfTool.title",
+    icon: isMac ? "" : "pdf",
+    cmd: "pdfTool",
+  },
+  {
+    labelKey: "mirageTank.title",
+    icon: isMac ? "" : "mirage-tank",
+    cmd: "mirageTank",
+  },
+];
+
 /**
  * format
  */
@@ -207,6 +231,8 @@ const rotateAngles = [
   { label: "135", value: 135 },
   { label: "180", value: 180 },
 ];
+
+export const moreToolsMenu = new Contextmenu(moreToolsItems);
 
 export const formatMenu = new Contextmenu(foramtItems);
 

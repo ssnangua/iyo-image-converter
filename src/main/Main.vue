@@ -8,6 +8,7 @@
         @show-setting="showSetting()"
         @show-edit-image="openEditImage"
         @show-filter-tool="openFilterTool"
+        @show-more-tools="showMoreTools"
         @add-tasks="onAddTasks"
         @remove-tasks="onRemoveTasks"
         @clear-tasks="onClearTasks"
@@ -66,13 +67,14 @@
 
 <script>
 import os from "os";
+import url from "url";
 import clone from "clone";
 import { showOpenDialog } from "nwjs-dialog";
 import { formats, formatsMap } from "@/preset/formats";
 import setting, { writeSetting } from "@/preset/setting";
 import { openAccept, handleDropImages } from "@/util/imageFiles";
 import converter from "@/util/converter";
-import appIcon from "../../icons/icon.png";
+import appIcon from "@/assets/icon.png";
 import { openPage } from "@/util/util";
 import HeaderToolbar from "./HeaderToolbar.vue";
 import AsideFormats from "./AsideFormats.vue";
@@ -80,6 +82,7 @@ import MainTasks from "./MainTasks.vue";
 import FooterInfobar from "./FooterInfobar.vue";
 import SettingDialog from "./SettingDialog.vue";
 import menubar from "./menubar";
+import { moreToolsMenu } from "./contextmenu";
 
 let tasksMap = {};
 let taskKey = 0;
@@ -145,6 +148,7 @@ export default {
       imageFiles.forEach((file) => {
         tasksMap[taskKey] = {
           key: taskKey,
+          url: url.pathToFileURL(file.path).toString(),
           input: file.path,
           filename: file.name,
           size: file.size,
@@ -324,6 +328,25 @@ export default {
           min_height: 480,
         }
       );
+    },
+
+    showMoreTools(e) {
+      moreToolsMenu.popup(e, ({ cmd }) => {
+        switch (cmd) {
+          case "animeTool":
+            this.openAnimeTool();
+            break;
+          case "icoTool":
+            this.openIcoTool();
+            break;
+          case "pdfTool":
+            this.openPdfTool();
+            break;
+          case "mirageTank":
+            this.openMirageTank();
+            break;
+        }
+      });
     },
 
     openAnimeTool() {

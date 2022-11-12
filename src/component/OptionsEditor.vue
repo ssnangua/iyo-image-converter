@@ -1,16 +1,16 @@
 <template>
   <el-form v-if="editorOptions" label-width="auto" class="editor">
-    <template v-for="item in editorOptions" :key="item.key">
+    <template v-for="item in editorOptions">
       <template v-if="!isTask || !item.hideIfTask">
         <!-- divider -->
-        <el-divider v-if="item.type === 'divider'" content-position="left">{{
+        <el-divider v-if="item.type === 'divider'" content-position="left" :key="item.key + '-divider'">{{
           $t(`${config.type}.${item.key}`)
         }}</el-divider>
 
         <!-- unlock -->
         <el-form-item
           v-else-if="!item.lockWhen || !item.lockWhen(value)"
-          :label="$t(`${config.type}.${item.key}`)"
+          :label="$t(`${config.type}.${item.key}`)" :key="item.key + '-unlock'"
         >
           <div style="width: 100%">
             <!-- editor -->
@@ -116,7 +116,7 @@
         <el-form-item
           v-else-if="!item.hideWhenLock"
           :label="$t(`${config.type}.${item.key}`)"
-          class="disabled"
+          class="disabled" :key="item.key + '-lock'"
         >
           <div style="width: 100%">
             <!-- editor -->
@@ -246,6 +246,7 @@ export default {
     setting: {
       immediate: true,
       handler(setting) {
+        if (!setting) return;
         const { unobtrusive } = this;
         if (this.config?.editor?.setValue) {
           this.value = this.config.editor.setValue(

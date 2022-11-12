@@ -15,25 +15,25 @@ A free native image converter | 一个免费的本地图片转换工具
 - 添加水印
 - 支持的图片格式: `.png`,`.jpg`,`.jpeg`,`.webp`,`.gif`,`.tif`,`.tiff`,`.avif`,`.heif`,`.bmp`,`.ico`,`.svg`, GIF/WebP/APNG 动图
 - 编辑图片
-    - 裁剪图片
-    - 旋转图片
-    - 支持动图
+  - 裁剪图片
+  - 旋转图片
+  - 支持动图
 - 滤镜工具
-    - 支持动图
-    - 支持自定义滤镜
+  - 支持动图
+  - 支持自定义滤镜
 - 动图工具
-    - 创建动图
-    - 给动图添加文字
-    - 导出动图帧图片
+  - 创建动图
+  - 给动图添加文字
+  - 导出动图帧图片
 - 图标工具
-    - 创建多尺寸 `.ico` 图片
-    - 导出图标中的图片
-    - 导出 `.exe`,`.dll`,`.ocx`,`.cpl` 文件中的 `.ico` 图片
+  - 创建多尺寸 `.ico` 图片
+  - 导出图标中的图片
+  - 导出 `.exe`,`.dll`,`.ocx`,`.cpl` 文件中的 `.ico` 图片
 - PDF 工具
-    - 导出 PDF 文件里的图片
-    - 将多张图片生成一个 PDF 文件
+  - 导出 PDF 文件里的图片
+  - 将多张图片生成一个 PDF 文件
 - 幻影坦克
-    - 简单的创建幻影坦克图片方式
+  - 简单的创建幻影坦克图片方式
 
 ## 自定义滤镜
 
@@ -42,19 +42,27 @@ A free native image converter | 一个免费的本地图片转换工具
 ## 开发
 
 ```bash
-# 初始化
-yarn
+# 设置 sharp 代理
+npm config set sharp_binary_host "https://npmmirror.com/mirrors/sharp"
+npm config set sharp_libvips_binary_host "https://npmmirror.com/mirrors/sharp-libvips"
+
+# 初始化（Windows）
+npm install
+# 初始化（Mac）
+npm install --build-from-source
 
 # 重新构建 sharp
-cd node_modules\sharp
-nw-gyp configure --target=0.68.1
-nw-gyp build --target=0.68.1
+cd node_modules/sharp
+npx nw-gyp configure --target=0.68.1
+npx nw-gyp build --target=0.68.1
 
 # 开发（根目录）
-yarn dev
+npm run dev
 
-# 构建
-yarn build
+# 构建（根目录）
+npm run build
+# 构建后（Mac）
+chmod +x dist-nw/iyo-image-converter-${version}-mac-x64/iYo\ Image\ Converter.app/Contents/Resources/app.nw/bin/*
 ```
 
 ## 引用

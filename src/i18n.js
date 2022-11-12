@@ -3,6 +3,7 @@ import path from "path";
 import { createI18n } from "vue-i18n";
 import setting from "./preset/setting";
 
+const languagesPath = path.join(process.cwd(), "languages");
 /**
  * Load locale messages
  *
@@ -24,9 +25,9 @@ function loadLocaleMessages() {
   //   }
   // });
   const messages = {};
-  fs.readdirSync("languages").forEach((file) => {
+  fs.readdirSync(languagesPath).forEach((file) => {
     const locale = path.parse(file).name;
-    messages[locale] = fs.readJSONSync(`languages/${file}`);
+    messages[locale] = fs.readJSONSync(path.join(languagesPath, `${file}`));
   });
   return messages;
 }

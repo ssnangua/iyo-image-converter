@@ -18,8 +18,7 @@ function isFilter(module) {
   return typeof module.en === "object" && typeof module.filters === "object";
 }
 
-const { startPath } = nw.App;
-const filtersPath = path.join(startPath, "filters");
+const filtersPath = path.join(process.cwd(), "filters");
 export const filters = {};
 export const filterGroups = [];
 fs.readdirSync(filtersPath).forEach((file) => {

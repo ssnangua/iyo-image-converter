@@ -1,12 +1,12 @@
 {
   "name": "iyo-image-converter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:web\" \"wait-on http://localhost:8080 && npm run dev:nw\"",
     "build": "npm run build:web && npm run build:nw",
     "lint": "vue-cli-service lint",
-    "build:nw": "build --tasks win-x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
+    "build:nw": "build --tasks win-x64,mac-x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
     "build:web": "vue-cli-service build",
     "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
     "dev:nw": "run --x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
@@ -18,8 +18,8 @@
     "id": "iyo-image-converter",
     "width": 1080,
     "height": 720,
-    "min_width": 720,
-    "min_height": 480,
+    "min_width": 780,
+    "min_height": 580,
     "icon": "icons/icon.png",
     "title": "　"
   },
@@ -71,7 +71,9 @@
     "parserOptions": {
       "parser": "@babel/eslint-parser"
     },
-    "rules": {},
+    "rules": {
+      "no-unused-expressions": "off"
+    },
     "globals": {
       "nw": "readonly"
     }
@@ -91,10 +93,10 @@
     "output": "./dist-nw/",
     "files": [
       "./dist/**/*.!(node)",
-      "./icons/*",
+      "./icons/**/*",
       "./languages/*",
-      "./node_modules/sharp/build/Release/*.@(node|dll)",
-      "./bin/*",
+      "./node_modules/sharp/**/*.@(node|dll|dylib)",
+      "./bin/**/*",
       "./filters/**/*"
     ],
     "overriddenProperties": {
@@ -116,6 +118,13 @@
         "English",
         "SimpChinese"
       ]
+    },
+    "mac": {
+      "name": "iYo",
+      "displayName": "iYo Image Converter",
+      "description": "https://github.com/ssnangua",
+      "icon": "icon.icns",
+      "documentIcon": "icon.icns"
     }
   }
 }

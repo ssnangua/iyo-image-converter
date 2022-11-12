@@ -48,13 +48,14 @@
               :config="watermarkOptions"
               :setting="value.watermark"
             />
-            <template v-for="tab in tabs" :key="tab.type">
+            <template v-for="tab in tabs">
               <OptionsEditor
                 v-if="tab.editor && tabsMap[tab.type]"
                 v-show="activeTab === tab.type"
                 :ref="tab.type"
                 :config="tab"
                 :setting="value[tab.type]"
+                :key="tab.type"
               />
             </template>
           </el-scrollbar>

@@ -23,7 +23,7 @@
     ></vxe-column>
     <vxe-column :title="$t('tasks.preview')" width="100">
       <template #default="{ row }">
-        <el-image :src="row.input" fit="contain" class="preview" />
+        <el-image :src="row.url" fit="contain" class="preview" />
       </template>
     </vxe-column>
     <vxe-column :title="$t('tasks.input')">

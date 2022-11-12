@@ -89,7 +89,7 @@
         <el-scrollbar v-if="filters.length > 0" class="filter-list">
           <div
             v-for="(item, index) in filters"
-            :key="item.name"
+            :key="item.name + '-' + index"
             class="filter-item"
             :class="{ disabled: !item.enable }"
           >
@@ -468,7 +468,7 @@ export default {
     onAddFilter(index) {
       this.allFilters[index].isAdded = true;
       const { filterKey } = this.allFilters[index];
-      this.filters.push({
+      const filter = {
         index,
         filterKey,
         enable: true,
@@ -479,7 +479,8 @@ export default {
           },
         },
         options: clone(filters[filterKey].defaultSetting),
-      });
+      };
+      this.filters.push(filter);
       // this.filtersListVisible = false;
     },
     onRemoveFilter(index) {
@@ -612,7 +613,10 @@ export default {
         let transparent = false;
         frames = await Promise.all(
           frames.map(async (frame, index) => {
-            const { buffer } = await frame.ensureAlpha().raw().toBuffer();
+            const { buffer } = await frame
+              .ensureAlpha()
+              .raw()
+              .toBuffer();
             let pixels = new Uint8ClampedArray(buffer);
             const { width: w, height: h } = sizes
               ? sizes[index]
