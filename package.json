@@ -20,7 +20,7 @@
     "height": 720,
     "min_width": 780,
     "min_height": 580,
-    "icon": "icons/icon.png",
+    "icon": "icons/win32/icon.png",
     "title": "　"
   },
   "dependencies": {
