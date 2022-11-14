@@ -307,7 +307,7 @@ export default {
         {
           id: "iyo-edit-image",
           title: this.$t("editImage.title"),
-          icon: "icons/editimage.png",
+          icon: "icons/win32/editimage.png",
           min_width: 480,
           min_height: 400,
         }
@@ -323,7 +323,7 @@ export default {
         {
           id: "iyo-filter-tool",
           title: this.$t("filterTool.title"),
-          icon: "icons/filter.png",
+          icon: "icons/win32/filter.png",
           min_width: 720,
           min_height: 480,
         }
@@ -358,7 +358,7 @@ export default {
         {
           id: "iyo-anime-tool",
           title: this.$t("animeTool.title"),
-          icon: "icons/anime.png",
+          icon: "icons/win32/anime.png",
           width: 600,
           height: 360,
           min_width: 480,
@@ -376,7 +376,7 @@ export default {
         {
           id: "iyo-ico-tool",
           title: this.$t("icoTool.title"),
-          icon: "icons/ico.png",
+          icon: "icons/win32/ico.png",
           width: 600,
           height: 492,
           resizable: false,
@@ -393,7 +393,7 @@ export default {
         {
           id: "iyo-pdf-tool",
           title: this.$t("pdfTool.title"),
-          icon: "icons/pdf.png",
+          icon: "icons/win32/pdf.png",
           width: 740,
           height: 580,
           min_width: 740,
@@ -411,7 +411,7 @@ export default {
         {
           id: "iyo-mirage-tank",
           title: this.$t("mirageTank.title"),
-          icon: "icons/mirage-tank.png",
+          icon: "icons/win32/mirage-tank.png",
           width: 600,
           height: 492,
           min_width: 480,
