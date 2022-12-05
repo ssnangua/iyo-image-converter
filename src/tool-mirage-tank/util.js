@@ -7,13 +7,16 @@ function grayscale(data) {
   }
 }
 
-function alpha(data, alpha) {
+function levels(data, levels) {
+  const c = levels > 0 ? 255 : 0;
+  levels = Math.abs(levels / 255);
+  const ia = 1 - levels;
   for (let i = 0, len = data.length; i < len; i += 4) {
-    const ia = 1 - alpha;
-    data[i] = 255 * alpha + data[i] * ia;
-    data[i + 1] = 255 * alpha + data[i + 1] * ia;
-    data[i + 2] = 255 * alpha + data[i + 2] * ia;
+    data[i] = c * levels + data[i] * ia;
+    data[i + 1] = c * levels + data[i + 1] * ia;
+    data[i + 2] = c * levels + data[i + 2] * ia;
   }
+  return data;
 }
 
 function brighten(data, brightness) {
@@ -61,24 +64,25 @@ function divideBlend(data1, data2) {
 function mask(data1, data2) {
   const data = [];
   for (let i = 0, len = data1.length; i < len; i += 4) {
-    const v = data1[i];
-    const a = data2[i];
-    data[i] = v;
-    data[i + 1] = v;
-    data[i + 2] = v;
-    data[i + 3] = a;
+    data[i] = data1[i];
+    data[i + 1] = data1[i + 1];
+    data[i + 2] = data1[i + 2];
+    data[i + 3] = data2[i];
   }
   return data;
 }
 
-export function mirageTank(fore, back, { fAlpha, bAlpha, bBrightness }) {
+export function mirageTank(fore, back, { color, fAlpha, bAlpha, fBrightness, bBrightness }) {
   const f = Uint8ClampedArray.from(fore);
   const b = Uint8ClampedArray.from(back);
-  grayscale(f);
-  grayscale(b);
-  alpha(f, fAlpha);
-  alpha(b, bAlpha);
-  brighten(b, bBrightness - 1);
+  brighten(f, fBrightness);
+  brighten(b, bBrightness);
+  if (!color) {
+    grayscale(f);
+    grayscale(b);
+  }
+  levels(f, (1 - fAlpha) * 255);
+  levels(b, (bAlpha - 1) * 255);
   invert(f);
   const l = linearDodgeBlend(f, b);
   const d = divideBlend(l, b);

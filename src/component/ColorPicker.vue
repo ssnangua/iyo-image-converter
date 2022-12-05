@@ -4,9 +4,14 @@
       :model-value="value"
       @change="
         $emit('update:modelValue', value);
-        $emit('change', $event);
+        $emit('change', value);
       "
       @input="value = $event"
+      clearable
+      @clear="
+        $emit('update:modelValue', '');
+        $emit('change', '');
+      "
     >
       <template #prepend>
         <el-color-picker

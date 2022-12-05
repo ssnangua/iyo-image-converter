@@ -30,19 +30,34 @@
             />
           </div>
         </div>
+      </div>
+      <div class="options">
+        <div class="option-item">
+          <div class="option-label">{{ $t("mirageTank.fBrightness") }}</div>
+          <div class="option-value">
+            <el-slider
+              v-model="setting.fBrightness"
+              :step="0.01"
+              :min="-1"
+              :max="1"
+            />
+          </div>
+        </div>
         <div class="option-item">
           <div class="option-label">{{ $t("mirageTank.bBrightness") }}</div>
           <div class="option-value">
             <el-slider
               v-model="setting.bBrightness"
               :step="0.01"
-              :min="0"
+              :min="-1"
               :max="1"
             />
           </div>
         </div>
       </div>
       <div class="toolbar">
+        <span class="option-label">{{ $t("mirageTank.color") }}</span>
+        <el-switch v-model="setting.color" style="margin: 0 12px;"></el-switch>
         <el-button @click="onSwapImages">{{
           $t("mirageTank.swapImages")
         }}</el-button>
@@ -152,9 +167,11 @@ export default {
       setting: {
         fImg: "",
         bImg: "",
+        color: false,
         fAlpha: 0.5,
         bAlpha: 0.5,
-        bBrightness: 0.5,
+        fBrightness: 0,
+        bBrightness: 0,
       },
       canvas: {
         width: 0,
@@ -251,7 +268,8 @@ export default {
       Object.assign(this.setting, {
         fAlpha: 0.5,
         bAlpha: 0.5,
-        bBrightness: 0.5,
+        fBrightness: 0,
+        bBrightness: 0,
       });
     },
 
@@ -337,12 +355,16 @@ body,
 
 .options {
   display: flex;
-  height: 66px;
+  height: 32px;
+}
+.options + .options {
+  margin-top: 10px;
 }
 .option-item {
   flex: auto;
   white-space: nowrap;
   overflow: hidden;
+  display: flex;
 }
 .option-item + .option-item {
   margin-left: 20px;
@@ -356,7 +378,8 @@ body,
 }
 .option-value {
   padding: 0 12px;
-  display: flex;
+  /* display: flex; */
+  flex: auto;
 }
 
 .toolbar {

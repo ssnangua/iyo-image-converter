@@ -198,10 +198,36 @@
     <el-dialog
       v-model="batchSetting.visible"
       :title="$t('filterTool.batch')"
+      :close-on-click-modal="false"
       width="80%"
       custom-class="dialog"
+      @open="batchSetting.batchFilesValue = ''"
     >
       <el-form label-width="auto" style="width: 100%">
+        <el-form-item :label="$t('filterTool.batchFiles')">
+          <div style="width: 100%">
+            <FilePicker
+              :options="{
+                accept: openAccept,
+                multiple: true,
+              }"
+              :rule="(value) => openAcceptRule.test(value)"
+              :concat="true"
+              :recursive="true"
+              :placeholder="$t('filterTool.selectImages')"
+              v-model="batchSetting.batchFilesValue"
+              @change="onBatchFilesChange"
+            />
+          </div>
+          <div class="description">
+            {{
+              $t("filterTool.batchFiles_desc", {
+                count: batchSetting.batchFiles.length,
+              })
+            }}
+          </div>
+        </el-form-item>
+
         <el-form-item :label="$t('filterTool.outputFolder')">
           <div style="width: 100%">
             <FilePicker
@@ -229,11 +255,15 @@
 
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="batchSetting.visible = false">
+          <!-- <el-button @click="batchSetting.visible = false">
             {{ $t("filterTool.cancel") }}
-          </el-button>
-          <el-button type="primary" @click="onBatch">
-            {{ $t("filterTool.ok") }}
+          </el-button> -->
+          <el-button
+            type="primary"
+            @click="onBatch"
+            :disabled="batchSetting.batchFiles.length === 0"
+          >
+            {{ $t("filterTool.start") }}
           </el-button>
         </span>
       </template>
@@ -264,6 +294,7 @@ import {
   handleDropImages,
   openAccept,
   saveAccept,
+  openAcceptRule,
   saveAcceptRule,
 } from "@/util/imageFiles";
 import { showError, showLoading } from "@/util/message";
@@ -312,7 +343,6 @@ function hasTransparent(pixels) {
 
 let imgInfo, pixels;
 let previewEl, canvas, timer;
-let selects;
 let sx, sy, se;
 
 export default {
@@ -346,10 +376,14 @@ export default {
       allFilters,
       filtersListVisible: false,
       previewFilter: null,
+      openAccept,
+      openAcceptRule,
       batchSetting: {
         visible: false,
         overwrite: setting.general.overwriteOutputFile,
         outputFolder: setting.general.outputFolder,
+        batchFilesValue: "",
+        batchFiles: [],
       },
     };
   },
@@ -370,26 +404,23 @@ export default {
       });
     },
 
-    onBatch() {
-      const { outputFolder } = this.batchSetting;
+    onBatchFilesChange(value) {
+      this.batchSetting.batchFiles = value.length > 0 ? value.split("|") : [];
+    },
+
+    async onBatch() {
+      this.batchSetting.visible = false;
+      const { overwrite, outputFolder, batchFiles } = this.batchSetting;
       if (outputFolder && !fs.existsSync(outputFolder)) {
         showError(this.$t("filterTool.invalidOutputFolder"));
         return;
       }
-      this.batchSetting.visible = false;
-      showOpenDialog({ multiple: true, accept: openAccept }).then((images) => {
-        selects = images;
-        this.startBatch();
-      });
-    },
-    async startBatch() {
-      const { overwrite, outputFolder } = this.batchSetting;
       const loading = showLoading({
         lock: true,
         text: this.$t("filterTool.processing"),
       });
-      for (let i = 0, total = selects.length; i < total; i++) {
-        const image = selects[i];
+      for (let i = 0, total = batchFiles.length; i < total; i++) {
+        const image = batchFiles[i];
         let fileOut = outputFolder
           ? path.join(outputFolder, path.basename(image))
           : image;
@@ -613,10 +644,7 @@ export default {
         let transparent = false;
         frames = await Promise.all(
           frames.map(async (frame, index) => {
-            const { buffer } = await frame
-              .ensureAlpha()
-              .raw()
-              .toBuffer();
+            const { buffer } = await frame.ensureAlpha().raw().toBuffer();
             let pixels = new Uint8ClampedArray(buffer);
             const { width: w, height: h } = sizes
               ? sizes[index]
@@ -664,8 +692,8 @@ export default {
 
     window.addEventListener("resize", this.onResize);
 
-    handleDropImages(([{ path }]) => {
-      this.loadImage(path);
+    handleDropImages(([image]) => {
+      if (image) this.loadImage(image.path);
     });
 
     window.addEventListener("contextmenu", (e) => {

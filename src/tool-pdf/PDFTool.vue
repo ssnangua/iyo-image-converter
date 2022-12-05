@@ -6,8 +6,10 @@
       <el-form-item :label="$t('pdfTool.pdfFile')">
         <FilePicker
           v-model="pdfPath"
-          :options="{ accept: '.pdf' }"
+          :options="{ accept: '.pdf', multiple: true }"
           :rule="(value) => /\.pdf/i.test(value)"
+          :concat="true"
+          :recursive="true"
           :placeholder="$t('pdfTool.selectPdfFile')"
         />
       </el-form-item>
@@ -248,7 +250,7 @@ export default {
 
   computed: {
     extractable() {
-      return this.pdfPath && this.outputFolder && /\.pdf$/i.test(this.pdfPath);
+      return this.pdfPath && /\.pdf$/i.test(this.pdfPath);
     },
   },
 
@@ -263,9 +265,12 @@ export default {
       nw.Shell.openItem(outputFolder);
     },
 
-    async extractImages() {
+    extractImages() {
       const { pdfPath, outputFolder, extractPassword } = this;
-      extractImages(pdfPath, outputFolder, extractPassword, this);
+      const pdfs = pdfPath.split(/\s*\|\s*/).filter(file => {
+        return fs.existsSync(file) && fs.statSync(file).isFile() && /\.pdf$/i.test(file)
+      })
+      extractImages(pdfs, outputFolder, extractPassword, this);
     },
 
     // generator

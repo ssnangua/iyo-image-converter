@@ -13,6 +13,8 @@
       @dragenter="dragenter = true"
       @dragleave="dragenter = false"
       @drop.prevent.stop="onDrop"
+      clearable
+      @clear="applyChange([], true)"
     >
       <template #append>
         <el-button :icon="FolderOpened" @click="onOpenDialog" />
@@ -23,6 +25,7 @@
 
 <script>
 import fs from "fs-extra";
+import path from "path";
 import { shallowRef } from "vue";
 import { FolderOpened } from "@element-plus/icons-vue";
 import { showOpenDialog } from "nwjs-dialog";
@@ -51,6 +54,14 @@ export default {
     handleDrop: {
       type: Function,
     },
+    concat: {
+      type: Boolean,
+      default: false,
+    },
+    recursive: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["update:modelValue", "change"],
   data() {
@@ -74,25 +85,63 @@ export default {
       if (options.nwdirectorydescKey) {
         options.nwdirectorydesc = this.$t(options.nwdirectorydescKey);
       }
-      showOpenDialog(options).then(([filePath]) => {
-        if (this.handleOpen) this.handleOpen(filePath);
-        else {
-          this.$emit("update:modelValue", filePath);
-          this.$emit("change", filePath);
-        }
+      showOpenDialog(options).then((files) => {
+        this.applyChange(files);
       });
     },
+
     onDrop(e) {
       this.dragenter = false;
-      const filePath = e.dataTransfer.files[0].path;
       const { nwdirectory } = this.options;
-      const isDir = fs.statSync(filePath).isDirectory();
-      if ((nwdirectory && !isDir) || (!nwdirectory && isDir)) return;
-      if (this.rule && !this.rule(filePath)) return;
-      if (this.handleDrop) this.handleDrop(filePath);
-      else {
-        this.$emit("update:modelValue", filePath);
-        this.$emit("change", filePath);
+      const dirs = [];
+      let files = Array.from(e.dataTransfer.files)
+        .map((file) => file.path)
+        .filter((file) => {
+          const isDir = fs.statSync(file).isDirectory();
+          if (isDir) dirs.push(file);
+          if ((nwdirectory && !isDir) || (!nwdirectory && isDir)) return false;
+          if (this.rule && !this.rule(file)) return false;
+          return true;
+        });
+      if (this.options.multiple && this.recursive) {
+        dirs.forEach((dir) => {
+          files = files.concat(this.recursiveDir(dir));
+        });
+      }
+      this.applyChange(files);
+    },
+
+    recursiveDir(dir) {
+      let files = [];
+      fs.readdirSync(dir).forEach((filename) => {
+        const file = path.join(dir, filename);
+        if (fs.statSync(file).isDirectory()) {
+          files = files.concat(this.recursiveDir(file));
+        } else {
+          if (this.rule && !this.rule(file)) return false;
+          files.push(file);
+        }
+      });
+      return files;
+    },
+
+    applyChange(files, isClear = false) {
+      const { multiple } = this.options;
+      if (this.handleDrop) {
+        this.handleDrop(multiple ? files : files[0] || "");
+      } else {
+        let value;
+        if (multiple) {
+          if (!isClear && this.concat && this.value.trim()) {
+            files = this.value.trim().split("|").concat(files);
+            files = Array.from(new Set(files));
+          }
+          value = files.join("|");
+        } else {
+          value = files[0] || "";
+        }
+        this.$emit("update:modelValue", value);
+        this.$emit("change", value);
       }
     },
   },

@@ -5,19 +5,28 @@ import sharp from "sharp";
 import PDF from "sharp-pdf";
 import { showLoading, showError } from "@/util/message";
 
-export function extractImages(pdfPath, outputFolder, password, vue) {
-  if (!fs.existsSync(pdfPath)) {
-    showError(`${pdfPath} ${vue.$t("pdfTool.notValidSourceFile")}`);
-    return false;
-  }
-  if (!fs.existsSync(outputFolder)) {
+export async function extractImages(pdfs, outputFolder, password, vue, i = 0) {
+  const pdfPath = pdfs[i];
+  const pdfProgress = pdfs.length === 1 ? "" : `[ ${i + 1} / ${pdfs.length} ] `;
+
+  // if (!fs.existsSync(pdfPath)) {
+  //   showError(`${pdfPath} ${vue.$t("pdfTool.notValidSourceFile")}`);
+  //   return false;
+  // }
+
+  const { dir: pdfDir, name: pdfName } = path.parse(pdfPath);
+
+  if (!outputFolder) outputFolder = pdfDir;
+  const outputDir = path.join(outputFolder, pdfName);
+  const validDir = await fs.ensureDir(outputDir).then(() => true).catch(() => false)
+  if (!validDir) {
     showError(`${outputFolder} ${vue.$t("pdfTool.notValidOutputFolder")}`);
     return false;
   }
 
   const loading = showLoading({
     lock: true,
-    text: vue.$t("pdfTool.loadingPdf"),
+    text: pdfProgress + vue.$t("pdfTool.loadingPdf"),
   });
 
   PDF.sharpsFromPdf(
@@ -30,20 +39,20 @@ export function extractImages(pdfPath, outputFolder, password, vue) {
       handler(event, data) {
         if (event === "loading") {
           const progress = Math.round((data.loaded / data.total) * 100);
-          loading.setText(`${vue.$t("pdfTool.loadingPdf")} ${progress}%`);
+          loading.setText(pdfProgress + `${vue.$t("pdfTool.loadingPdf")} ${progress}%`);
         } else if (event === "image" || event === "error") {
           const progress = Math.round((data.pageIndex / data.pages) * 100);
-          loading.setText(`${vue.$t("pdfTool.parsingImages")} ${progress}%`);
+          loading.setText(pdfProgress + `${vue.$t("pdfTool.parsingImages")} ${progress}%`);
         }
       },
     }
   )
     .then((images) => {
-      loading.setText(vue.$t("pdfTool.extracting"));
+      loading.setText(pdfProgress + vue.$t("pdfTool.extracting"));
       return Promise.all(
         images.map(({ image, name, channels }) => {
           const ext = channels > 3 ? ".png" : ".jpg";
-          const fileOut = path.join(outputFolder, `${name}${ext}`);
+          const fileOut = path.join(outputDir, `${name}${ext}`);
           return image.toFile(fileOut).catch((err) => showError(err));
         })
       );
@@ -52,6 +61,11 @@ export function extractImages(pdfPath, outputFolder, password, vue) {
     .catch((err) => {
       showError(err);
       loading.close();
+    })
+    .then(() => {
+      if (i < pdfs.length - 1) {
+        extractImages(pdfs, outputFolder, password, vue, i + 1)
+      }
     });
 }
 

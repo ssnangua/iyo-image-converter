@@ -3,14 +3,18 @@
     <template v-for="item in editorOptions">
       <template v-if="!isTask || !item.hideIfTask">
         <!-- divider -->
-        <el-divider v-if="item.type === 'divider'" content-position="left" :key="item.key + '-divider'">{{
-          $t(`${config.type}.${item.key}`)
-        }}</el-divider>
+        <el-divider
+          v-if="item.type === 'divider'"
+          content-position="left"
+          :key="item.key + '-divider'"
+          >{{ $t(`${config.type}.${item.key}`) }}</el-divider
+        >
 
         <!-- unlock -->
         <el-form-item
           v-else-if="!item.lockWhen || !item.lockWhen(value)"
-          :label="$t(`${config.type}.${item.key}`)" :key="item.key + '-unlock'"
+          :label="$t(`${config.type}.${item.key}`)"
+          :key="item.key + '-unlock'"
         >
           <div style="width: 100%">
             <!-- editor -->
@@ -78,6 +82,8 @@
             <el-input
               v-else-if="item.type === 'string'"
               v-model="value[item.key]"
+              clearable
+              @clear="value[item.key] = ''"
             />
             <el-switch
               v-else-if="item.type === 'boolean'"
@@ -116,7 +122,8 @@
         <el-form-item
           v-else-if="!item.hideWhenLock"
           :label="$t(`${config.type}.${item.key}`)"
-          class="disabled" :key="item.key + '-lock'"
+          class="disabled"
+          :key="item.key + '-lock'"
         >
           <div style="width: 100%">
             <!-- editor -->

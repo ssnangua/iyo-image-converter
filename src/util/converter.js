@@ -537,6 +537,7 @@ export async function getFrames(input, options) {
   }
 }
 
+let tempId = 0;
 /**
  * Write image file
  * @param {Object} imageData
@@ -605,9 +606,16 @@ export async function sharpToFile(
     }
   }
 
-  // Create a copy to ensure the input file can be overwritten
   if (fs.existsSync(fileOut)) {
-    image = sharp(await image.toBuffer());
+    // Create a copy to ensure the input file can be overwritten (something is wrong)
+    // image = sharp(await image.toBuffer());
+
+    // Remove the existing file (fileOut may fail to write)
+    // await fs.remove(fileOut);
+
+    // Write to a temp path, then move it to fileOut
+    const temp = path.join(nw.App.dataPath, (++tempId) + path.extname(fileOut));
+    return image.toFile(temp).then(() => fs.move(temp, fileOut, { overwrite: true }));
   }
 
   return image.toFile(fileOut);
