@@ -5,9 +5,12 @@ import sharp from "sharp";
 import PDF from "sharp-pdf";
 import { showLoading, showError } from "@/util/message";
 
+const win = nw.Window.get();
+
 export async function extractImages(pdfs, outputFolder, password, vue, i = 0) {
   const pdfPath = pdfs[i];
   const pdfProgress = pdfs.length === 1 ? "" : `[ ${i + 1} / ${pdfs.length} ] `;
+  win.setProgressBar(i / pdfs.length);
 
   // if (!fs.existsSync(pdfPath)) {
   //   showError(`${pdfPath} ${vue.$t("pdfTool.notValidSourceFile")}`);
@@ -18,7 +21,10 @@ export async function extractImages(pdfs, outputFolder, password, vue, i = 0) {
 
   if (!outputFolder) outputFolder = pdfDir;
   const outputDir = path.join(outputFolder, pdfName);
-  const validDir = await fs.ensureDir(outputDir).then(() => true).catch(() => false)
+  const validDir = await fs
+    .ensureDir(outputDir)
+    .then(() => true)
+    .catch(() => false);
   if (!validDir) {
     showError(`${outputFolder} ${vue.$t("pdfTool.notValidOutputFolder")}`);
     return false;
@@ -39,10 +45,14 @@ export async function extractImages(pdfs, outputFolder, password, vue, i = 0) {
       handler(event, data) {
         if (event === "loading") {
           const progress = Math.round((data.loaded / data.total) * 100);
-          loading.setText(pdfProgress + `${vue.$t("pdfTool.loadingPdf")} ${progress}%`);
+          loading.setText(
+            pdfProgress + `${vue.$t("pdfTool.loadingPdf")} ${progress}%`
+          );
         } else if (event === "image" || event === "error") {
           const progress = Math.round((data.pageIndex / data.pages) * 100);
-          loading.setText(pdfProgress + `${vue.$t("pdfTool.parsingImages")} ${progress}%`);
+          loading.setText(
+            pdfProgress + `${vue.$t("pdfTool.parsingImages")} ${progress}%`
+          );
         }
       },
     }
@@ -64,7 +74,9 @@ export async function extractImages(pdfs, outputFolder, password, vue, i = 0) {
     })
     .then(() => {
       if (i < pdfs.length - 1) {
-        extractImages(pdfs, outputFolder, password, vue, i + 1)
+        extractImages(pdfs, outputFolder, password, vue, i + 1);
+      } else {
+        win.setProgressBar(-1);
       }
     });
 }

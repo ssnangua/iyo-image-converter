@@ -242,6 +242,7 @@ body,
   justify-content: center;
   image-rendering: pixelated;
   transition: 0.1s;
+  position: relative;
 }
 .icon-btn.border {
   border-color: #a8abb2;
@@ -264,6 +265,18 @@ body,
 }
 .icon-btn + .icon-btn {
   margin-left: 4px;
+}
+.icon-btn.has-submenu::after {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  content: ' ';
+  border: 3px solid transparent;
+  border-top: 3px solid #606266;
+  transform: rotate(-45deg);
+}
+.disabled.icon-btn.has-submenu::after {
+  opacity: 0.5;
 }
 
 .label {

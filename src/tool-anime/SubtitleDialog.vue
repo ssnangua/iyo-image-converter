@@ -140,22 +140,9 @@
 </template>
 
 <script>
+import clone from "clone";
 import FontPicker from "@/component/FontPicker.vue";
 import ColorPicker from "@/component/ColorPicker.vue";
-
-const defaultData = {
-  marginBottom: 10,
-  fontSize: 24,
-  fontFamily: "Arial",
-  italic: false,
-  bold: false,
-  fontColor: "#000000",
-  strokeWidth: 0,
-  strokeColor: "#ffffff",
-  lineSpacing: 2,
-  text: "",
-  duration: 1,
-};
 
 export default {
   name: "SubtitleDialog",
@@ -169,13 +156,25 @@ export default {
   data() {
     return {
       visible: false,
-      data: { ...defaultData },
+      data: {
+        marginBottom: 10,
+        fontSize: 24,
+        fontFamily: "Arial",
+        italic: false,
+        bold: false,
+        fontColor: "#000000",
+        strokeWidth: 0,
+        strokeColor: "#ffffff",
+        lineSpacing: 2,
+        text: "",
+        duration: 1,
+      },
     };
   },
 
   methods: {
     show(data) {
-      this.data = data || { ...defaultData };
+      Object.assign(this.data, data || { text: "", duration: 1 });
       this.visible = true;
     },
     onWrap() {
@@ -196,7 +195,7 @@ export default {
       this.$emit("data-change", this.data);
     },
     onClosed() {
-      this.$emit("closed", this.data);
+      this.$emit("closed", clone(this.data));
       this.visible = false;
     },
   },

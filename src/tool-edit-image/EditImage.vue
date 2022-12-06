@@ -117,7 +117,7 @@
             ><i class="iconfont icon-rotate"></i
           ></span>
           <span
-            class="icon-btn border"
+            class="icon-btn border has-submenu"
             :class="{
               disabled: mode === 'crop' && !cropped,
               active: grid.visible,
@@ -128,7 +128,7 @@
             ><i class="iconfont icon-grid"></i
           ></span>
           <span
-            class="icon-btn border"
+            class="icon-btn border has-submenu"
             :class="{ disabled: !cropped, active: preview }"
             @mouseenter="preview = true"
             @mouseleave="preview = false"
@@ -801,8 +801,11 @@ export default {
     const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
     const body = document.body;
     window.addEventListener("keydown", (e) => {
+      const isCtrl = e.ctrlKey || e.metaKey;
       if (e.code === "Space" && !this.moveMode) {
         this.moveMode = true;
+      } else if (isCtrl && e.code === "KeyS") {
+        this.onSave();
       } else if (
         this.cropped &&
         arrowKeys.indexOf(e.code) !== -1 &&
@@ -817,18 +820,18 @@ export default {
         const step = e.shiftKey ? 10 : 1;
         switch (e.code) {
           case "ArrowUp":
-            crop.top = e.ctrlKey ? minTop : Math.max(crop.top - step, minTop);
+            crop.top = isCtrl ? minTop : Math.max(crop.top - step, minTop);
             break;
           case "ArrowDown":
-            crop.top = e.ctrlKey ? maxTop : Math.min(crop.top + step, maxTop);
+            crop.top = isCtrl ? maxTop : Math.min(crop.top + step, maxTop);
             break;
           case "ArrowLeft":
-            crop.left = e.ctrlKey
+            crop.left = isCtrl
               ? minLeft
               : Math.max(crop.left - step, minLeft);
             break;
           case "ArrowRight":
-            crop.left = e.ctrlKey
+            crop.left = isCtrl
               ? maxLeft
               : Math.min(crop.left + step, maxLeft);
             break;

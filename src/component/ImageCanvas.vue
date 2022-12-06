@@ -4,10 +4,10 @@
 
 <script>
 import sharp from "sharp";
-import { getSharp } from "@/util/converter";
+import { isSharp, getSharp } from "@/util/converter";
 
 export async function getPixels(input, width, height) {
-  let image = await getSharp(input);
+  let image = isSharp(input) ? input : await getSharp(input);
   const meta = await image.metadata();
   if (meta.width !== width || meta.height !== height) {
     image.png().resize({

@@ -405,7 +405,8 @@
     "save": "保存",
     "saving": "保存中 …",
     "noImage": "拖放图片到这里",
-    "noFilter": "未添加滤镜"
+    "noFilter": "未添加滤镜",
+    "currentFrame": "当前帧"
   },
   "animeTool": {
     "title": "动图工具",
@@ -421,9 +422,12 @@
     "threeTimes": "3 次",
     "forever": "永远",
     "other": "其它…",
+    "copyFrames": "复制所选帧",
+    "pasteFrames": "粘贴帧",
     "moveEnd": "移动到最后面",
     "moveFront": "移动到最前面",
     "reverseFrames": "反转所选帧",
+    "notConsecutive": "所选帧需要连续",
     "saveAs": "保存所选帧为 …",
     "chooseOutputFolder": "选择输出文件夹",
     "selectAll": "全选",

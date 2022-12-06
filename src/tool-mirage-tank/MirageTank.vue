@@ -274,6 +274,7 @@ export default {
     },
 
     onSave() {
+      if (!this.setting.fImg || !this.setting.bImg) return;
       showSaveDialog({
         nwworkingdir: imgInfo.dirname,
         nwsaveas: `${fImg.name}_${bImg.name}.png`,
@@ -308,6 +309,13 @@ export default {
 
     window.addEventListener("resize", this.updateCanvasEl);
     this.updateCanvasEl();
+
+    window.addEventListener("keyup", (e) => {
+      const isCtrl = e.ctrlKey || e.metaKey;
+      if (isCtrl && e.code === "KeyS") {
+        this.onSave();
+      }
+    });
 
     const preventDefault = (e) => {
       e.preventDefault();

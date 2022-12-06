@@ -256,6 +256,7 @@ body,
   image-rendering: pixelated;
   padding: 5px;
   transition: 0.1s;
+  position: relative;
 }
 .icon-btn:hover {
   background-color: var(--bg-hover);
@@ -283,6 +284,18 @@ body,
 }
 .icon-btn > .icon-btn.append:hover {
   background-color: var(--bg);
+}
+.icon-btn.has-submenu::after {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  content: ' ';
+  border: 5px solid transparent;
+  border-top: 5px solid var(--text-color);
+  transform: rotate(-45deg);
+}
+.disabled .icon-btn.has-submenu::after, .disabled.icon-btn.has-submenu::after {
+  opacity: 0.5;
 }
 
 .icon-btn.scrollbar-button {

@@ -87,8 +87,31 @@ const deleteFrames = [
   { labelKey: "animeTool.deleteAll", value: "deleteAll" },
 ];
 
+const timeline = [
+  {
+    labelKey: "animeTool.pasteFrames",
+    value: "pasteFrames",
+    modifiers: "ctrl",
+    key: "v",
+  },
+]
+
 const frameItem = [
   { labelKey: "animeTool.deleteFrames", value: "delete", key: "Delete" },
+  { type: "separator" },
+  {
+    labelKey: "animeTool.copyFrames",
+    value: "copyFrames",
+    modifiers: "ctrl",
+    key: "c",
+  },
+  {
+    labelKey: "animeTool.pasteFrames",
+    value: "pasteFrames",
+    cmd: "pasteFrames",
+    modifiers: "ctrl",
+    key: "v",
+  },
   { type: "separator" },
   { labelKey: "animeTool.moveFront", value: "moveFront" },
   { labelKey: "animeTool.moveEnd", value: "moveEnd" },
@@ -117,6 +140,7 @@ const delayMenu = new Contextmenu(delayValues);
 const loopMenu = new Contextmenu(loopValues);
 const insertMenu = new Contextmenu(insertTo);
 const deleteMenu = new Contextmenu(deleteFrames);
+const timelineMenu = new Contextmenu(timeline);
 const frameMenu = new Contextmenu(frameItem);
 const saveMenu = new Contextmenu(saveTypes);
 
@@ -159,19 +183,40 @@ export default {
       }
     },
 
+    // timeline
+    showTimelineMenu(e) {
+      if (this.hasCopiedImages) {
+        timelineMenu.popup(e, this.timelineMenuCallback);
+      }
+    },
+    timelineMenuCallback({ value }) {
+      if (value === "pasteFrames") {
+        this.pasteFrames(this.frames.length);
+      }
+    },
+
     // frame
     showFrameMenu(e, index) {
       if (!this.frames[index].selected) this.onFrameClick(e, index);
       const count = this.frames.filter((frame) => frame.selected).length;
-      frameMenu.popup(e, this.frameMenuCallback, { reverse: count > 1 });
+      frameMenu.popup(e, this.frameMenuCallback, {
+        pasteFrames: this.hasCopiedImages,
+        reverse: count > 1,
+      });
     },
     frameMenuCallback({ value }) {
       if (value === "delete") {
         this.deleteFrames();
+      } else if (value === "copyFrames") {
+        this.copySelectedFrames();
+      } else if (value === "pasteFrames") {
+        this.pasteFrames();
       } else if (value === "moveFront") {
         this.moveSelectedFrameToIndex(-1);
+        this.ensureFrameInView(0);
       } else if (value === "moveEnd") {
         this.moveSelectedFrameToIndex(this.frames.length - 1);
+        this.ensureFrameInView(this.frames.length - 1);
       } else if (value === "reverse") {
         this.reverse();
       } else if (value === "saveAs") {

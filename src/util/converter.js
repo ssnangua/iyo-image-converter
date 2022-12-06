@@ -47,6 +47,14 @@ export async function isAnimated(input, ext) {
   );
 }
 
+export function isSharp(input) {
+  return (
+    input !== null &&
+    typeof input === "object" &&
+    typeof input.metadata === "function"
+  );
+}
+
 export async function getSharp(task, options) {
   if (typeof task === "string") task = { input: task };
   let { input, ext, animated, toAnimated } = task;
@@ -477,7 +485,7 @@ export async function getImageInfo(filePath) {
   if (ext === "apng") {
     pages = APNG.framesFromApng(filePath).length;
   }
-  const {dir, base, name} = path.parse(filePath);
+  const { dir, base, name } = path.parse(filePath);
   return {
     location: filePath,
     dirname: dir,
@@ -614,8 +622,10 @@ export async function sharpToFile(
     // await fs.remove(fileOut);
 
     // Write to a temp path, then move it to fileOut
-    const temp = path.join(nw.App.dataPath, (++tempId) + path.extname(fileOut));
-    return image.toFile(temp).then(() => fs.move(temp, fileOut, { overwrite: true }));
+    const temp = path.join(nw.App.dataPath, ++tempId + path.extname(fileOut));
+    return image
+      .toFile(temp)
+      .then(() => fs.move(temp, fileOut, { overwrite: true }));
   }
 
   return image.toFile(fileOut);

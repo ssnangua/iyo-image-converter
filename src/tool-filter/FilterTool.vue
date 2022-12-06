@@ -1,19 +1,48 @@
 <template>
   <div class="window">
     <div class="header">
-      <el-button type="primary" class="icon-btn" @click="onOpen">
-        <i class="iconfont icon-image"></i>
-        <span>{{ $t("filterTool.open") }}</span>
-      </el-button>
-      <el-button
-        text
-        class="icon-btn"
-        :disabled="filters.length === 0"
-        @click="batchSetting.visible = true"
-      >
-        <i class="iconfont icon-images"></i>
-        <span>{{ $t("filterTool.batch") }}</span>
-      </el-button>
+      <div class="main-control">
+        <el-button type="primary" class="icon-btn" @click="onOpen">
+          <i class="iconfont icon-image"></i>
+          <span>{{ $t("filterTool.open") }}</span>
+        </el-button>
+        <el-button
+          text
+          class="icon-btn"
+          :disabled="filters.length === 0"
+          @click="batchSetting.visible = true"
+        >
+          <i class="iconfont icon-images"></i>
+          <span>{{ $t("filterTool.batch") }}</span>
+        </el-button>
+      </div>
+
+      <div v-if="frameState.total > 1" class="frame-control">
+        <span class="current-frame">{{ $t("filterTool.currentFrame") }}</span>
+        <el-input
+          :model-value="frameState.current + ' / ' + frameState.total"
+          @keydown="onFrameKeydown"
+          :readonly="true"
+          style="width: 150px"
+        >
+          <template #prepend>
+            <el-button
+              :icon="ArrowLeft"
+              :class="{ disabled: frameState.current === 1 }"
+              @click="onCurrentFrameChange(-1)"
+              @keydown="onFrameKeydown"
+            />
+          </template>
+          <template #append>
+            <el-button
+              :icon="ArrowRight"
+              :class="{ disabled: frameState.current === frameState.total }"
+              @click="onCurrentFrameChange(1)"
+              @keydown="onFrameKeydown"
+            />
+          </template>
+        </el-input>
+      </div>
 
       <div class="filter-control">
         <el-button
@@ -21,7 +50,6 @@
           round
           :icon="Plus"
           @click="filtersListVisible = true"
-          style="float: left"
           >{{ $t("filterTool.addFilter") }}</el-button
         >
       </div>
@@ -288,6 +316,8 @@ import {
   Hide,
   RefreshLeft,
   Delete,
+  ArrowLeft,
+  ArrowRight,
 } from "@element-plus/icons-vue";
 import { getFrames, getImageInfo, sharpToFile } from "@/util/converter";
 import {
@@ -345,6 +375,8 @@ let imgInfo, pixels;
 let previewEl, canvas, timer;
 let sx, sy, se;
 
+const win = nw.Window.get();
+
 export default {
   name: "FilterTool",
   components: { ImageCanvas, OptionsEditor, FilePicker },
@@ -359,7 +391,10 @@ export default {
       Hide: shallowRef(Hide),
       RefreshLeft: shallowRef(RefreshLeft),
       Delete: shallowRef(Delete),
+      ArrowLeft: shallowRef(ArrowLeft),
+      ArrowRight: shallowRef(ArrowRight),
       hasImage: false,
+      frameState: { current: -1, total: 0 },
       scaleFactor,
       canvas: {
         zoom: 0,
@@ -429,14 +464,44 @@ export default {
         loading.setText(
           this.$t("filterTool.processing") + " " + `${i + 1} / ${total}`
         );
+        win.setProgressBar(i / total);
       }
       loading.close();
+      win.setProgressBar(-1);
+    },
+
+    async onCurrentFrameChange(inc) {
+      if (
+        (inc < 0 && this.frameState.current <= 1) ||
+        (inc > 0 && this.frameState.current >= this.frameState.total)
+      )
+        return;
+      this.frameState.current += inc;
+      pixels = await getPixels(
+        imgInfo.frames[this.frameState.current - 1],
+        imgInfo.width,
+        imgInfo.height
+      );
+      this.draw();
+    },
+    onFrameKeydown(e) {
+      if (e.code === "ArrowLeft") {
+        this.onCurrentFrameChange(-1);
+      } else if (e.code === "ArrowRight") {
+        this.onCurrentFrameChange(1);
+      }
     },
 
     async loadImage(input) {
       imgInfo = await getImageInfo(input);
       imgInfo.input = input;
-      pixels = await getPixels(input, imgInfo.width, imgInfo.height);
+      imgInfo.frames = (await getFrames(input)).frames;
+      this.frameState = { current: 1, total: imgInfo.pages };
+      pixels = await getPixels(
+        imgInfo.frames[0],
+        imgInfo.width,
+        imgInfo.height
+      );
 
       this.hasImage = true;
 
@@ -613,7 +678,8 @@ export default {
     },
 
     onSave() {
-      return showSaveDialog({
+      if (!this.hasImage) return;
+      showSaveDialog({
         nwworkingdir: imgInfo.dirname,
         nwsaveas: imgInfo.filename,
         accept: saveAccept,
@@ -639,6 +705,7 @@ export default {
 
     async saveImage(input, fileOut, progress) {
       const { width, height, pages } = await getImageInfo(input);
+      let task;
       if (pages > 1) {
         let { frames, sizes, ...options } = await getFrames(input);
         let transparent = false;
@@ -656,7 +723,7 @@ export default {
             }).png();
           })
         );
-        return sharpToFile(
+        task = sharpToFile(
           { frames },
           fileOut,
           { transparent, ...options },
@@ -668,8 +735,13 @@ export default {
         const image = sharp(pixels, {
           raw: { width, height, channels: 4 },
         });
-        return sharpToFile({ image }, fileOut);
+        task = sharpToFile({ image }, fileOut);
       }
+      return task.then(() => {
+        if (fileOut === imgInfo.input) {
+          this.loadImage(fileOut);
+        }
+      });
     },
 
     updateTitle() {
@@ -690,10 +762,22 @@ export default {
     previewEl = this.$refs.preview;
     canvas = this.$refs.canvas;
 
-    window.addEventListener("resize", this.onResize);
-
     handleDropImages(([image]) => {
       if (image) this.loadImage(image.path);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "PageUp") {
+        this.onCurrentFrameChange(-1);
+      } else if (e.code === "PageDown") {
+        this.onCurrentFrameChange(1);
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      const isCtrl = e.ctrlKey || e.metaKey;
+      if (isCtrl && e.code === "KeyS") {
+        this.onSave();
+      }
     });
 
     window.addEventListener("contextmenu", (e) => {
@@ -702,6 +786,8 @@ export default {
         return false;
       }
     });
+
+    window.addEventListener("resize", this.onResize);
   },
 };
 </script>
@@ -734,8 +820,49 @@ body,
 .iconfont + span {
   margin-left: 5px;
 }
+
+.header {
+  display: flex;
+}
+.main-control {
+  flex: auto;
+}
+.frame-control {
+  margin-right: 10px;
+}
+.current-frame {
+  line-height: 32px;
+  color: #606266;
+  font-size: 14px;
+  margin-right: 10px;
+}
+.frame-control .el-input__inner {
+  text-align: center;
+}
+.frame-control .el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--el-input-border-color, var(--el-border-color))
+    inset !important;
+}
+.frame-control .el-input-group__append,
+.frame-control .el-input-group__prepend {
+  padding: 0 16px;
+}
+.frame-control .el-input-group__append .el-button,
+.frame-control .el-input-group__prepend .el-button {
+  padding: 8px;
+  outline: none;
+}
+.frame-control .el-input-group__append .el-button.disabled,
+.frame-control .el-input-group__prepend .el-button.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.frame-control .el-input-group__append .el-button:hover .el-icon,
+.frame-control .el-input-group__prepend .el-button:hover .el-icon {
+  color: #649cfa;
+}
 .filter-control {
-  float: right;
+  width: 300px;
 }
 
 .body {

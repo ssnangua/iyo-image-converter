@@ -71,7 +71,7 @@
       </div>
       <div class="frame-info" v-if="frameInfo">
         {{ frameInfo.basename }} - {{ $t("animeTool.frame") }}
-        {{ frameInfo.index + 1 }}
+        {{ frameInfo.sourceFrameIndex + 1 }}
       </div>
     </div>
     <!-- info bar end -->
@@ -82,12 +82,13 @@
       :class="{ disabled: playing }"
       ref="frameList"
       @mousewheel="setScrollLeft(this.scrollLeft + $event.deltaY)"
+      @contextmenu="showTimelineMenu($event)"
     >
       <div v-if="!hasData" class="nodata">{{ $t("animeTool.emptyText") }}</div>
       <div v-else class="frame-divider" :class="{ insert: insertIndex < 0 }" />
       <template v-for="(frame, index) in frames" :key="index">
         <div
-          @contextmenu="showFrameMenu($event, index)"
+          @contextmenu.prevent.stop="showFrameMenu($event, index)"
           class="frame-item"
           :class="{
             selected: frame.selected,
@@ -226,7 +227,7 @@
       <div class="btn-group">
         <!-- import -->
         <span
-          class="icon-btn"
+          class="icon-btn has-submenu"
           :class="{ disabled: playing }"
           @click="onControl('insert')"
           @contextmenu="showInsertMenu"
@@ -236,7 +237,7 @@
         </span>
         <!-- delete -->
         <span
-          class="icon-btn"
+          class="icon-btn has-submenu"
           :class="{ disabled: !hasData || playing }"
           @click="onControl('delete')"
           @contextmenu="showDeleteMenu"
@@ -360,6 +361,7 @@
 
 <script>
 import path from "path";
+import clone from "clone";
 import { handleDropImages, openAcceptRule } from "@/util/imageFiles";
 import { sharpToBase64, getFrames } from "@/util/converter";
 import { getSearches, getCurrentScreen } from "@/util/util";
@@ -390,6 +392,8 @@ let cvs, ctx;
 let playedTimes = 0;
 
 let dragInfo;
+
+let copiedImages = null;
 
 export default {
   name: "AnimeTool",
@@ -431,6 +435,7 @@ export default {
         top: 0,
         left: 0,
       },
+      hasCopiedImages: false,
 
       loop: 0,
       loopKeys: {
@@ -592,11 +597,15 @@ export default {
       }
     },
 
+    getSelectedFrames() {
+      return this.frames.filter((frame) => frame.selected);
+    },
+
     deleteFrames(deleteAll = false) {
       if (this.dontShowDeleteConfirmAgain) {
         this.doDeleteFrames(deleteAll);
       } else {
-        const count = this.frames.filter((frame) => frame.selected).length;
+        const count = this.getSelectedFrames().length;
         this.showInputDialog({
           name: "deleteConfirm",
           type: "warning",
@@ -611,19 +620,22 @@ export default {
     },
 
     doDeleteFrames(deleteAll) {
+      const firstSelectedIndex = this.frames.find(
+        (frame) => frame.selected
+      ).index;
       if (deleteAll) {
         images = [];
         this.frames = [];
       } else {
         images = images.filter((image) => !image.item.selected);
-        this.frames = this.frames.filter((frame) => !frame.selected);
+        this.reloadFrames();
       }
       if (this.hasData) {
         if (this.setting.resizeTo !== "customSize") {
           const { width, height } = this.getSizeFromFrames();
           this.updateImageSize(width, height);
         }
-        this.selectFrame(Math.min(this.curFrameIndex, images.length - 1));
+        this.selectFrame(Math.min(firstSelectedIndex, images.length - 1));
       } else {
         this.curFrameIndex = 0;
         this.updateImageSize(320, 240);
@@ -634,6 +646,45 @@ export default {
       this.updateScrollbar();
     },
 
+    copySelectedFrames() {
+      copiedImages = images.filter((image) => image.item.selected);
+      this.hasCopiedImages = true;
+    },
+
+    pasteFrames(insertIndex) {
+      const { hasData } = this;
+      if (copiedImages) {
+        const cloneImages = copiedImages.map((image) => {
+          const { item, frame, img } = image;
+          const cloneItem = clone(item);
+          cloneItem.subtitle = null;
+          return { item: cloneItem, frame, img };
+        });
+        if (typeof insertIndex !== "number") {
+          const selectedFrames = this.getSelectedFrames();
+          const lastSelected = selectedFrames[selectedFrames.length - 1];
+          insertIndex = lastSelected ? lastSelected.index + 1 : 0;
+        }
+        images.splice(insertIndex, 0, ...cloneImages);
+        this.reloadFrames();
+
+        if (!hasData && this.setting.resizeTo !== "customSize") {
+          const { width, height } = this.getSizeFromFrames();
+          this.updateImageSize(width, height);
+        }
+        this.selectFrame(cloneImages[0].item.index);
+        cloneImages.forEach((image) => (image.item.selected = true));
+
+        this.updateScrollbar();
+        this.$nextTick(() => {
+          this.ensureFrameInView(
+            cloneImages[cloneImages.length - 1].item.index
+          );
+          this.ensureFrameInView(cloneImages[0].item.index);
+        });
+      }
+    },
+
     reverse() {
       const { frames } = this;
       let start = -1,
@@ -642,13 +693,16 @@ export default {
         if (frames[i].selected) {
           if (start < 0) start = i;
           if (end < 0) end = i;
-          else if (i !== end + 1) return alert("需要连续");
+          else if (i !== end + 1)
+            return alert(this.$t("animeTool.notConsecutive"));
           else end = i;
         }
       }
       if (end > start) {
+        const curFrame = this.frames[this.curFrameIndex];
         images = reverseArray(images, start, end);
-        this.frames = reverseArray(this.frames, start, end);
+        this.reloadFrames(curFrame);
+        this.ensureFrameInView(this.curFrameIndex);
       }
     },
 
@@ -690,15 +744,15 @@ export default {
         lock: true,
         text: this.$t("animeTool.parsing"),
       });
+      const { hasData } = this;
       let allImages = [];
-      let allFrames = [];
       for (let i = 0; i < files.length; i++) {
         const filePath = files[i].path;
         if (openAcceptRule.test(filePath)) {
-          const _images = [];
+          const newImages = [];
           const { name, base: basename } = path.parse(filePath);
           const { frames, width, height, delay } = await getFrames(filePath);
-          const _frames = await Promise.all(
+          await Promise.all(
             frames.map(async (frame, index) => {
               const base64 = await sharpToBase64(frame);
               const img = new Image(width, height);
@@ -710,7 +764,8 @@ export default {
               const item = {
                 basename,
                 name,
-                index,
+                sourceFrameIndex: index,
+                index: 0,
                 base64,
                 width,
                 height,
@@ -718,15 +773,12 @@ export default {
                 selected: false,
                 subtitle: null,
               };
-              _images[index] = { item, frame, img };
-              return item;
+              newImages[index] = { item, frame, img };
             })
           ).catch(() => {});
-          allImages = allImages.concat(_images);
-          allFrames = allFrames.concat(_frames);
+          allImages = allImages.concat(newImages);
         }
       }
-      const curFrame = this.frames[this.curFrameIndex];
       let insertIndex = 0;
       if (insertTo === "insertFront") {
         insertIndex = 0;
@@ -739,23 +791,38 @@ export default {
         insertIndex = images.length;
       }
       images.splice(insertIndex, 0, ...allImages);
-      this.frames.splice(insertIndex, 0, ...allFrames);
+      this.reloadFrames();
 
       if (this.setting.resizeTo !== "customSize") {
         const { width, height } = this.getSizeFromFrames();
         this.updateImageSize(width, height);
       }
 
-      this.updateScrollbar();
-      if (curFrame) {
-        const curFrameIndex = this.frames.indexOf(curFrame);
-        this.selectFrame(curFrameIndex);
-        if (this.zoom > this.fitZoom) this.setZoom(this.fitZoom);
+      if (hasData) {
+        this.selectFrame(allImages[0].item.index);
+        allImages.forEach((image) => (image.item.selected = true));
       } else {
         this.selectFrame(0);
         this.setZoom(Math.min(1 / this.scaleFactor, this.fitZoom));
       }
+
+      this.updateScrollbar();
+      this.$nextTick(() => {
+        this.ensureFrameInView(allImages[allImages.length - 1].item.index);
+        this.ensureFrameInView(allImages[0].item.index);
+      });
+
       loading.close();
+    },
+
+    reloadFrames(curFrame) {
+      images.forEach((image, index) => {
+        image.item.index = index;
+      });
+      this.frames = images.map((image) => image.item);
+      if (curFrame) {
+        this.curFrameIndex = this.frames.indexOf(curFrame);
+      }
     },
 
     onControl(action) {
@@ -913,8 +980,7 @@ export default {
           ...selectedImages
         );
         images = unselectedImages;
-        this.frames = images.map((image) => image.item);
-        this.curFrameIndex = this.frames.indexOf(curFrame);
+        this.reloadFrames(curFrame);
       }
     },
 
@@ -986,7 +1052,7 @@ export default {
     },
 
     saveImage(ext) {
-      saveImage(this, images, ext);
+      if (this.hasData) saveImage(this, images, ext);
     },
 
     updateLocale(locale) {
@@ -1038,8 +1104,17 @@ export default {
         case "KeyA":
           if (isCtrl) this.setAllFramesSelected(true);
           break;
+        case "KeyC":
+          if (isCtrl && this.hasData) this.copySelectedFrames();
+          break;
+        case "KeyV":
+          if (isCtrl && copiedImages) this.pasteFrames();
+          break;
+        case "KeyS":
+          if (isCtrl) this.saveImage("gif");
+          break;
         case "Space":
-          if (this.frames.length > 1) this.onControl("play");
+          if (this.hasData) this.onControl("play");
           break;
         case "Delete":
           this.deleteFrames();

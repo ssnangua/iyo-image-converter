@@ -67,6 +67,7 @@
 
 <script>
 import os from "os";
+import path from "path";
 import url from "url";
 import clone from "clone";
 import { showOpenDialog } from "nwjs-dialog";
@@ -93,6 +94,11 @@ function getTasksFromMap() {
     return task;
   });
 }
+
+const win = nw.Window.get();
+
+const audioPath = path.join(process.cwd(), "icons/Complete.mp3");
+const audio = new Audio(url.pathToFileURL(audioPath).toString());
 
 export default {
   name: "AppMain",
@@ -250,12 +256,14 @@ export default {
             task.state === "failed" ||
             task.state === "ignored"
           ) {
-            this.progress = { processed: this.progress.processed + 1, total };
+            const processed = this.progress.processed + 1;
+            this.progress = { processed, total };
             // all tasks processed
             if (index === total - 1) {
               this.onStopConvert();
               this.completeNotify();
             }
+            win.setProgressBar(this.processing ? processed / total : -1);
           } else {
             // task.state === "processing"
           }
@@ -279,6 +287,8 @@ export default {
           ].join("\r\n"),
           icon: appIcon,
         });
+
+        audio.play();
       }
     },
 
