@@ -139,15 +139,16 @@ export async function rotateImage(image, task, angle, background) {
     });
     image = await gif.toSharp();
   } else {
+    const { type } = task.format;
     if (transparent) {
       // Ensure alpha channel
-      const { type } = task.format;
       if (type === "apng") {
         image.png();
       } else if (!/raw|tiny|bmp|ico/.test(type)) {
         image.toFormat(type);
       }
     }
+    if (type === "jpeg") background = "#FFFFFF";
     image.rotate(angle, { background });
   }
   return image;
@@ -295,6 +296,10 @@ async function convert(setting, task, fileOut, input) {
   if (type === "apng") {
     const { lossless, cnum } = task.options;
     return APNG.sharpToApng(image, fileOut, lossless ? undefined : { cnum });
+  }
+
+  if (type === "jpeg") {
+    image.ensureAlpha().flatten({ background: "#FFFFFF" });
   }
 
   image.toFormat(type, {
@@ -612,6 +617,10 @@ export async function sharpToFile(
     if (frames.length > 1) {
       return APNG.framesToApng(frames, fileOut, options);
     }
+  }
+
+  if (/\.(jpg|jpeg)$/i.test(fileOut)) {
+    image.ensureAlpha().flatten({ background: "#FFFFFF" });
   }
 
   if (fs.existsSync(fileOut)) {
