@@ -386,6 +386,7 @@
     "title": "滤镜工具",
     "open": "打开",
     "batch": "批量处理",
+    "loading": "加载中 …",
     "batchFiles": "要处理的文件",
     "selectImages": "选择图片文件，或拖放文件到这里",
     "batchFiles_desc": "未选择文件 | 已选择 1 个文件 | 已选择 {count} 个文件",

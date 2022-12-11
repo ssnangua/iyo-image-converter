@@ -751,7 +751,20 @@ export default {
         if (openAcceptRule.test(filePath)) {
           const newImages = [];
           const { name, base: basename } = path.parse(filePath);
-          const { frames, width, height, delay } = await getFrames(filePath);
+          const fileProgress =
+            files.length > 1 ? `[ ${i + 1} / ${files.length} ] ` : "";
+          const { frames, width, height, delay } = await getFrames(
+            filePath,
+            {},
+            ({ cutted, total }) => {
+              loading.setText(
+                fileProgress +
+                  this.$t("animeTool.parsing") +
+                  " " +
+                  `${cutted} / ${total}`
+              );
+            }
+          );
           await Promise.all(
             frames.map(async (frame, index) => {
               const base64 = await sharpToBase64(frame);

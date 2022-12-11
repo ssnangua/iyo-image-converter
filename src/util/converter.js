@@ -512,13 +512,13 @@ export async function getImageInfo(filePath) {
  *  @param {Number[]} delay
  *  @param {Array<{ width: Number, height: Number }>}  sizes (ICO only)
  */
-export async function getFrames(input, options) {
+export async function getFrames(input, options, progress) {
   const { ext } = await fileTypeFromFile(input);
   const defDelay = 100;
   if (ext === "gif" || ext === "webp") {
     const image = sharp(input, { animated: true });
     const { width, height, pageHeight, delay } = await image.metadata();
-    const frames = await GIF.readGif(image).toFrames();
+    const frames = await GIF.readGif(image).toFrames(progress);
     return { ext, frames, width, height: pageHeight || height, delay };
   } else if (ext === "apng") {
     const apng = APNG.framesFromApng(input, true);

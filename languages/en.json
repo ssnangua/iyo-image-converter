@@ -383,6 +383,7 @@
   "filterTool": {
     "title": "Filter Tool",
     "open": "Open",
+    "loading": "Loading …",
     "batch": "Batch",
     "batchFiles": "Batch Files",
     "selectImages": "Select images, or drop files here",

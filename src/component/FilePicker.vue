@@ -76,6 +76,8 @@ export default {
       immediate: true,
       handler(value) {
         this.value = value;
+        this.$emit("update:modelValue", value);
+        this.$emit("change", value);
       },
     },
   },

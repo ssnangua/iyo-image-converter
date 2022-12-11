@@ -495,7 +495,18 @@ export default {
     async loadImage(input) {
       imgInfo = await getImageInfo(input);
       imgInfo.input = input;
-      imgInfo.frames = (await getFrames(input)).frames;
+      const loading = showLoading({
+        lock: true,
+        text: this.$t("filterTool.loading"),
+      });
+      imgInfo.frames = (
+        await getFrames(input, {}, ({ cutted, total }) => {
+          loading.setText(
+            this.$t("filterTool.loading") + " " + `${cutted} / ${total}`
+          );
+        })
+      ).frames;
+      loading.close();
       this.frameState = { current: 1, total: imgInfo.pages };
       pixels = await getPixels(
         imgInfo.frames[0],
