@@ -165,7 +165,7 @@ try {
 } catch (e) {
   console.warn(e);
 }
-const setting = deepExtend(defaultSetting, userSetting);
+const setting = deepExtend({}, defaultSetting, userSetting);
 
 export default setting;
 
