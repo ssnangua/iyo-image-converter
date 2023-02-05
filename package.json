@@ -16,7 +16,7 @@
     "lint": "vue-cli-service lint",
     "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\""
   },
-  "main": "preload.html",
+  "main": "preload.html?env=dev",
   "node-remote": "<all_urls>",
   "window": {
     "id": "iyo-preload",
@@ -105,6 +105,9 @@
       "./filters/**/*",
       "./preload.html"
     ],
+    "overriddenProperties": {
+      "main": "preload.html"
+    },
     "win": {
       "productName": "iYoImageConverter",
       "displayName": "iYo Image Converter",

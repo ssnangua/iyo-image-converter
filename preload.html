@@ -33,7 +33,7 @@
   </div>
   <script>
     const baseURL =
-      location.protocol === "chrome-extension:" ? "/dist" : "http://localhost:8080";
+      location.search === "?env=dev" ? "http://localhost:8080" : "/dist";
     nw.Window.open(
       `${baseURL}/main.html`,
       {
