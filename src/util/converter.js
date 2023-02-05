@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
+import url from "url";
 import sharp from "sharp";
 import { fileTypeFromFile } from "file-type";
 import BMP from "sharp-bmp";
@@ -10,6 +11,7 @@ import UPNG from "upng-js";
 import { formatsMap } from "@/preset/formats";
 import { comparePaths, formatDate, isUndefined } from "./util";
 import { openAcceptRule } from "./imageFiles";
+import { trash } from "./shell";
 
 sharp.cache(false);
 // console.log(sharp.format);
@@ -87,8 +89,13 @@ export async function getSharp(task, options) {
 }
 
 function getOutputFolder(task) {
-  const { outputFolder } = task.general;
+  let { outputFolder, keepDirectoryStructure } = task.general;
   if (outputFolder) {
+    if (keepDirectoryStructure && task.rootPath) {
+      outputFolder = path
+        .dirname(task.input)
+        .replace(path.resolve(task.rootPath, ".."), outputFolder);
+    }
     fs.ensureDirSync(outputFolder);
     return outputFolder;
   } else {
@@ -441,19 +448,47 @@ export default {
 
         if (task.animated && !task.toAnimated) {
           converter = toFrames(setting, task);
-        } else if (type === "raw" || type === "tiny" || type === task.ext) {
+        } else if (type === "raw" || type === "tiny") {
           converter = toInputFormat(setting, task, output);
         } else if (task.ext === "ico") {
           converter = toIcons(setting, task, output);
         } else {
-          converter = convert(setting, task, output);
+          const inputType = ext2type[task.ext] || task.ext;
+          if (inputType === type) {
+            if (setting.general.skipSameFormat) {
+              task.state = "ignored";
+              progress(i, length, task);
+              continue;
+            } else {
+              converter = toInputFormat(setting, task, output);
+            }
+          } else {
+            converter = convert(setting, task, output);
+          }
         }
 
         await converter
-          .then((info) => {
+          .then(async (info) => {
+            // Update task
             task.state = "completed";
             task.output = info.output || output;
+            task.outputUrl = url.pathToFileURL(task.output).toString();
             task.outputSize = info.size || fs.statSync(task.output).size;
+
+            // After processing
+            const { afterProcessing } = task.general;
+            if (
+              afterProcessing !== "none" &&
+              !comparePaths(task.input, task.output)
+            ) {
+              if (afterProcessing === "deleteSourceFile") {
+                return fs.remove(task.input);
+              } else if (afterProcessing === "moveSourceFileToTrash") {
+                return trash(task.input);
+              }
+            }
+          })
+          .then(() => {
             progress(i, length, task);
           })
           .catch((err) => {

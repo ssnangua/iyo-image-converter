@@ -155,6 +155,7 @@ export default {
         tasksMap[taskKey] = {
           key: taskKey,
           url: url.pathToFileURL(file.path).toString(),
+          rootPath: file.rootPath,
           input: file.path,
           filename: file.name,
           size: file.size,
@@ -169,6 +170,7 @@ export default {
           inputOptions: undefined,
           options: clone(setting[format.type]),
           output: undefined,
+          outputUrl: "",
           outputSize: undefined,
           error: undefined,
         };
@@ -264,6 +266,10 @@ export default {
               this.completeNotify();
             }
             win.setProgressBar(this.processing ? processed / total : -1);
+            const percent = Math.round((processed / total) * 100) + "%";
+            document.title = this.processing
+              ? `${percent} [${processed}/${total}] - ${this.getTitle()}`
+              : this.getTitle();
           } else {
             // task.state === "processing"
           }

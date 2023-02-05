@@ -1,27 +1,32 @@
 {
   "name": "iyo-image-converter",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:web\" \"wait-on http://localhost:8080 && npm run dev:nw\"",
-    "build": "npm run build:web && npm run build:nw",
-    "lint": "vue-cli-service lint",
-    "build:nw": "build --tasks win-x64,mac-x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
-    "build:web": "vue-cli-service build",
-    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\"",
     "dev:nw": "run --x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
-    "dev:web": "vue-cli-service serve"
+    "dev:web": "vue-cli-service serve",
+    "build": "npm run build:web && npm run build:nw",
+    "build:win": "npm run build:web && npm run build:nw-win",
+    "build:mac": "npm run build:web && npm run build:nw-mac",
+    "build:web": "vue-cli-service build",
+    "build:nw": "build --tasks win-x64,mac-x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
+    "build:nw-win": "build --tasks win-x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
+    "build:nw-mac": "build --tasks mac-x64 --mirror https://npm.taobao.org/mirrors/nwjs/ .",
+    "lint": "vue-cli-service lint",
+    "i18n:report": "vue-cli-service i18n:report --src \"./src/**/*.?(js|vue)\" --locales \"./src/locales/**/*.json\""
   },
-  "main": "http://localhost:8080/main.html",
+  "main": "preload.html",
   "node-remote": "<all_urls>",
   "window": {
-    "id": "iyo-image-converter",
-    "width": 1080,
-    "height": 720,
-    "min_width": 780,
-    "min_height": 580,
-    "icon": "icons/win32/icon.png",
-    "title": "　"
+    "id": "iyo-preload",
+    "width": 256,
+    "height": 256,
+    "resizable": false,
+    "position": "center",
+    "frame": false,
+    "transparent": true,
+    "show_in_taskbar": false
   },
   "dependencies": {
     "clone": "^2.1.2",
@@ -97,11 +102,9 @@
       "./languages/*",
       "./node_modules/sharp/**/*.@(node|dll|dylib)",
       "./bin/**/*",
-      "./filters/**/*"
+      "./filters/**/*",
+      "./preload.html"
     ],
-    "overriddenProperties": {
-      "main": "dist/main.html"
-    },
     "win": {
       "productName": "iYoImageConverter",
       "displayName": "iYo Image Converter",

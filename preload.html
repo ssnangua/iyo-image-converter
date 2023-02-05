@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <style>
+    * {
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+
+    html,
+    body,
+    #app {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .logo {
+      width: 256px;
+      height: 256px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <img src="./icons/win32/icon.png" class="logo" />
+  </div>
+  <script>
+    const baseURL =
+      location.protocol === "chrome-extension:" ? "/dist" : "http://localhost:8080";
+    nw.Window.open(
+      `${baseURL}/main.html`,
+      {
+        id: "iyo-image-converter",
+        width: 1080,
+        height: 720,
+        min_width: 780,
+        min_height: 580,
+        icon: "icons/win32/icon.png",
+        title: "　",
+        show: false,
+        new_instance: true,
+        mixed_context: true,
+      },
+      (win) => {
+        win.on("loaded", () => {
+          win.show();
+          win.focus();
+          nw.Window.get().close();
+        });
+      }
+    );
+  </script>
+</body>
+
+</html>

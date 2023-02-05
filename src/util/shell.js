@@ -1,4 +1,5 @@
 import path from "path";
+import os from "os";
 import fs from "fs-extra";
 import { exec, execFile } from "child_process";
 import { promisify } from "util";
@@ -9,6 +10,8 @@ const cwd = process.cwd();
 const bin = {
   iconsext: path.join(cwd, "bin/iconsext.exe"),
   fontlist: path.join(cwd, "bin/fontlist"),
+  trash_win32: path.join(cwd, "bin/windows-trash.exe"),
+  trash_darwin: path.join(cwd, "bin/macos-trash"),
 };
 
 // https://www.nirsoft.net/utils/iconsext.html
@@ -94,4 +97,15 @@ function listFontDarwin() {
 export function listFont() {
   if (process.platform === "darwin") return listFontDarwin();
   else return listFontWin32();
+}
+
+// https://github.com/sindresorhus/trash
+const isOlderThanMountainLion = Number(os.release().split(".")[0]) < 12;
+export function trash(input) {
+  if (process.platform === "darwin" && isOlderThanMountainLion) {
+    return fs.remove(input);
+  }
+  const _bin =
+    process.platform === "darwin" ? bin.trash_darwin : bin.trash_win32;
+  return execp(`${_bin} "${path.resolve(input)}"`);
 }

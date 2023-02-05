@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs-extra";
+import { deepExtend } from "@/util/util";
 
 export const defaultSetting = {
   locale: navigator.language || process.env.VUE_APP_I18N_LOCALE || "en",
@@ -7,10 +8,13 @@ export const defaultSetting = {
     outputFolder: "",
     appendFilename: "",
     overwriteOutputFile: false,
+    afterProcessing: "none",
+    skipSameFormat: false,
     outputAnimated: true,
     extractFrames: "allFrames",
     newFolder: true,
     readFolders: true,
+    keepDirectoryStructure: true,
     completeNotify: false,
     showTaskIndex: false,
   },
@@ -153,14 +157,15 @@ export const defaultSetting = {
 };
 
 const settingFile = path.join(nw.App.dataPath, "setting.json");
-let setting = defaultSetting;
+let userSetting = {};
 try {
   if (fs.existsSync(settingFile)) {
-    setting = fs.readJSONSync(settingFile);
+    userSetting = fs.readJSONSync(settingFile);
   }
 } catch (e) {
   console.warn(e);
 }
+const setting = deepExtend(defaultSetting, userSetting);
 
 export default setting;
 

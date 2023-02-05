@@ -117,6 +117,14 @@
     "appendFilename": "文件名后缀",
     "overwriteOutputFile": "覆盖目标文件",
     "overwriteOutputFile_desc": "目标文件存在时覆盖文件",
+    "afterProcessing": "图片处理后",
+    "afterProcessingOptions": {
+      "none": "无处理",
+      "deleteSourceFile": "删除源文件（快）",
+      "moveSourceFileToTrash": "将源文件移到回收站（慢）"
+    },
+    "skipSameFormat": "跳过相同格式",
+    "skipSameFormat_desc": "转换图片格式时，如果输入格式与输出格式相同，则跳过",
     "animatedImage": "动图",
     "outputAnimated": "输出动图",
     "outputAnimated_desc": "动图转换为 GIF/WebP/APNG 时，是否输出动图（否则输出动画帧）",
@@ -129,6 +137,8 @@
     "input": "输入",
     "readFolders": "读取文件夹",
     "readFolders_desc": "拖放时读取文件夹，否则只读取文件",
+    "keepDirectoryStructure": "保持目录结构",
+    "keepDirectoryStructure_desc": "如果设置了输出文件夹，输出时保持拖放的目录结构",
     "gui": "界面",
     "showTaskIndex": "显示任务索引",
     "completeNotify": "完成通知"

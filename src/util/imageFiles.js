@@ -13,7 +13,7 @@ export const saveAcceptRule =
 function compareFiles(a, b) {
   return a.name.length - b.name.length || (a.name > b.name ? 1 : -1);
 }
-export async function getImages(files, isReadFolders, images = []) {
+export async function getImages(files, isReadFolders, images = [], rootPath) {
   for (let i = 0, length = files.length; i < length; i++) {
     const file = files[i];
     const stat = await fs.stat(file);
@@ -23,12 +23,14 @@ export async function getImages(files, isReadFolders, images = []) {
         await getImages(
           subfiles.map((subfile) => path.join(file, subfile)),
           isReadFolders,
-          images
+          images,
+          rootPath || file
         );
       }
     } else {
       if (openAcceptRule.test(file)) {
         images.push({
+          rootPath,
           path: file,
           name: path.basename(file),
           size: stat.size,

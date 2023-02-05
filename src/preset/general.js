@@ -29,6 +29,30 @@ export default {
         default: false,
       },
       {
+        key: "afterProcessing",
+        type: "select",
+        default: "none",
+        options: [
+          {
+            labelKey: "general.afterProcessingOptions.none",
+            value: "none",
+          },
+          {
+            labelKey: "general.afterProcessingOptions.deleteSourceFile",
+            value: "deleteSourceFile",
+          },
+          {
+            labelKey: "general.afterProcessingOptions.moveSourceFileToTrash",
+            value: "moveSourceFileToTrash",
+          },
+        ],
+      },
+      {
+        key: "skipSameFormat",
+        type: "boolean",
+        default: false,
+      },
+      {
         key: "animatedImage",
         type: "divider",
       },
@@ -62,6 +86,13 @@ export default {
         type: "boolean",
         default: false,
         hideIfTask: true,
+      },
+      {
+        key: "keepDirectoryStructure",
+        type: "boolean",
+        default: true,
+        hideIfTask: true,
+        lockWhen: (value) => !value.readFolders || !value.outputFolder.trim(),
       },
       {
         key: "gui",
