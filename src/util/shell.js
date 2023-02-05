@@ -107,5 +107,5 @@ export function trash(input) {
   }
   const _bin =
     process.platform === "darwin" ? bin.trash_darwin : bin.trash_win32;
-  return execp(`${_bin} "${path.resolve(input)}"`);
+  return execp(`"${_bin}" "${path.resolve(input)}"`);
 }
