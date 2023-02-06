@@ -1,6 +1,8 @@
 /**
  * General Options
  */
+import sharp from "sharp";
+
 export default {
   type: "general",
   editor: {
@@ -51,6 +53,23 @@ export default {
         key: "skipSameFormat",
         type: "boolean",
         default: false,
+      },
+      {
+        key: "concurrently",
+        type: "number",
+        default: 1,
+        step: 1,
+        min: 1,
+        max: sharp.concurrency(),
+        hideIfTask: true,
+      },
+      {
+        key: "timeout",
+        type: "number",
+        input: true,
+        default: 60,
+        step: 1,
+        min: 0,
       },
       {
         key: "animatedImage",
@@ -109,6 +128,12 @@ export default {
         key: "showTaskIndex",
         type: "boolean",
         default: false,
+        hideIfTask: true,
+      },
+      {
+        key: "showTaskPreview",
+        type: "boolean",
+        default: true,
         hideIfTask: true,
       },
     ],

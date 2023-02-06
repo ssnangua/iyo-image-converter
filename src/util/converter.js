@@ -9,12 +9,12 @@ import GIF from "sharp-gif2";
 import APNG from "sharp-apng";
 import UPNG from "upng-js";
 import { formatsMap } from "@/preset/formats";
-import { comparePaths, formatDate, isUndefined } from "./util";
+import { comparePaths, delay, formatDate, isUndefined } from "./util";
 import { openAcceptRule } from "./imageFiles";
 import { trash } from "./shell";
 
-sharp.cache(false);
 // console.log(sharp.format);
+sharp.cache(false);
 
 // `to-data-view` (for `decode-ico`) will check if input buffer is an instance of ArrayBuffer,
 // but NW.js has a different context, causing the check to fail,
@@ -321,7 +321,7 @@ async function convert(setting, task, fileOut, input) {
     });
   }
 
-  return image.toFile(fileOut);
+  return image.timeout({ seconds: task.general.timeout || 0 }).toFile(fileOut);
 }
 
 /**
@@ -408,101 +408,132 @@ async function toIcons(setting, task) {
   return { output, ...info };
 }
 
-let processing = false;
+/**
+ * Process task
+ */
+let job = null;
 
-export default {
-  async start(setting, tasks, progress, vue) {
-    processing = true;
+function callProgress(index) {
+  job.progress(index, job.tasks.length, job.tasks[index]);
+}
 
-    for (let i = 0, length = tasks.length; i < length; i++) {
-      if (processing === false) return;
-      const task = tasks[i];
+async function nextTask() {
+  if (job.running === false || job.index > job.tasks.length - 1) return;
 
-      if (task.state === "waiting") {
-        task.state = "processing";
-        progress(i, length, task);
+  const { tasks, index, setting, vue } = job;
+  job.index += 1;
 
-        if (!fs.existsSync(task.input)) {
-          task.error = vue.$t("message.notExist", { path: task.input });
-          task.state = "failed";
-          progress(i, length, task);
-          continue;
-        }
+  await delay(0);
 
-        if (isUndefined(task.ext)) {
-          task.ext = (await fileTypeFromFile(task.input)).ext;
-        }
+  const task = tasks[index];
 
-        if (isUndefined(task.animated)) {
-          task.animated = await isAnimated(task.input, task.ext);
-        }
+  if (task.state === "waiting") {
+    task.state = "processing";
+    callProgress(index);
 
-        const { type } = task.format;
-        task.toAnimated =
-          task.animated &&
-          task.general.outputAnimated &&
-          /apng|gif|webp|raw|tiny/.test(type);
+    if (!fs.existsSync(task.input)) {
+      task.error = vue.$t("message.notExist", { path: task.input });
+      task.state = "failed";
+      callProgress(index);
+      return nextTask();
+    }
 
-        const output = getOutputPath(task);
-        let converter;
+    if (isUndefined(task.ext)) {
+      task.ext = (await fileTypeFromFile(task.input)).ext;
+    }
 
-        if (task.animated && !task.toAnimated) {
-          converter = toFrames(setting, task);
-        } else if (type === "raw" || type === "tiny") {
-          converter = toInputFormat(setting, task, output);
-        } else if (task.ext === "ico") {
-          converter = toIcons(setting, task, output);
-        } else {
-          const inputType = ext2type[task.ext] || task.ext;
-          if (inputType === type) {
-            if (setting.general.skipSameFormat) {
-              task.state = "ignored";
-              progress(i, length, task);
-              continue;
-            } else {
-              converter = toInputFormat(setting, task, output);
-            }
+    if (isUndefined(task.animated)) {
+      task.animated = await isAnimated(task.input, task.ext);
+    }
+
+    const { type } = task.format;
+    task.toAnimated =
+      task.animated &&
+      task.general.outputAnimated &&
+      /apng|gif|webp|raw|tiny/.test(type);
+
+    const output = getOutputPath(task);
+    let converter;
+
+    if (task.animated && !task.toAnimated) {
+      converter = toFrames(setting, task);
+    } else if (type === "raw" || type === "tiny") {
+      converter = toInputFormat(setting, task, output);
+    } else if (task.ext === "ico") {
+      converter = toIcons(setting, task, output);
+    } else {
+      const inputType = ext2type[task.ext] || task.ext;
+      if (inputType === type) {
+        if (task.general.skipSameFormat) {
+          if (!comparePaths(task.input, output)) {
+            converter = fs.copy(task.input, output).then(() => {
+              return { output, size: task.size, state: "ignored" };
+            });
           } else {
-            converter = convert(setting, task, output);
+            task.state = "ignored";
+            callProgress(index);
+            return nextTask();
           }
+        } else {
+          converter = toInputFormat(setting, task, output);
         }
-
-        await converter
-          .then(async (info) => {
-            // Update task
-            task.state = "completed";
-            task.output = info.output || output;
-            task.outputUrl = url.pathToFileURL(task.output).toString();
-            task.outputSize = info.size || fs.statSync(task.output).size;
-
-            // After processing
-            const { afterProcessing } = task.general;
-            if (
-              afterProcessing !== "none" &&
-              !comparePaths(task.input, task.output)
-            ) {
-              if (afterProcessing === "deleteSourceFile") {
-                return fs.remove(task.input);
-              } else if (afterProcessing === "moveSourceFileToTrash") {
-                return trash(task.input);
-              }
-            }
-          })
-          .then(() => {
-            progress(i, length, task);
-          })
-          .catch((err) => {
-            console.warn(err);
-            task.error = err;
-            task.state = "failed";
-            progress(i, length, task);
-          });
+      } else {
+        converter = convert(setting, task, output);
       }
     }
+
+    await converter
+      .then(async (info) => {
+        // Update task
+        task.state = info.state || "completed";
+        task.output = info.output || output;
+        task.outputUrl = url.pathToFileURL(task.output).toString();
+        task.outputSize = info.size || fs.statSync(task.output).size;
+
+        // After processing
+        const { afterProcessing } = task.general;
+        if (
+          afterProcessing !== "none" &&
+          !comparePaths(task.input, task.output)
+        ) {
+          if (afterProcessing === "deleteSourceFile") {
+            return fs.remove(task.input);
+          } else if (afterProcessing === "moveSourceFileToTrash") {
+            return trash(task.input);
+          }
+        }
+      })
+      .then(() => {
+        callProgress(index);
+      })
+      .catch((err) => {
+        console.warn(err);
+        task.error = err;
+        task.state = "failed";
+        callProgress(index);
+      });
+  }
+
+  return nextTask();
+}
+
+export default {
+  start(tasks, progress, setting, vue) {
+    job = {
+      tasks,
+      progress,
+      setting,
+      vue,
+      running: true,
+      index: 0,
+    };
+
+    const { concurrently = 1 } = setting.general;
+    for (let i = 0; i < concurrently; i++) nextTask();
   },
 
   stop() {
-    processing = false;
+    job.running = false;
   },
 };
 

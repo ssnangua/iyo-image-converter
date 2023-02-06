@@ -32,11 +32,12 @@
   },
   "about": {
     "version": "Version",
+    "os": "OS",
     "nwjs": "NW.js",
     "chromium": "Chromium",
     "nodejs": "Node.js",
     "v8": "V8",
-    "os": "OS"
+    "sharp": "sharp"
   },
   "toolbar": {
     "option": "Option",
@@ -125,6 +126,9 @@
     },
     "skipSameFormat":"Skip Same Format",
     "skipSameFormat_desc":"When converting the image format, if the input format is the same as the output format, then skip.",
+    "concurrently": "Concurrently",
+    "timeout": "Timeout (s)",
+    "timeout_desc": "Processing timeout for each image (0 is indefinitely).",
     "animatedImage": "Animated Image",
     "outputAnimated": "Output Animated",
     "outputAnimated_desc": "Output as animated image when an animated image convert to GIF/WebP/APNG, otherwise output frames.",
@@ -138,9 +142,10 @@
     "readFolders": "Read Folders",
     "readFolders_desc": "Read dropped folders, otherwise only read files.",
     "keepDirectoryStructure": "Keep Directory Structure",
-    "keepDirectoryStructure_desc": "If an output folder is set, keep the directory structure when outputting.",
+    "keepDirectoryStructure_desc": "Keep the directory structure of dropped files in the output folder.",
     "gui": "GUI",
     "showTaskIndex": "Show Task Index",
+    "showTaskPreview": "Show Task Preview",
     "completeNotify": "Complete Notify"
   },
   "modifier": {

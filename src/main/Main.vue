@@ -22,7 +22,7 @@
           :height="mainHeight"
           :formats="formats"
           :curFormat="curFormat"
-          @format-changed="curFormat = $event"
+          @format-changed="onCurFormatChange"
           @format-setting="onFormatSetting"
           @format-tips="tips = $event && $t(`${$event}.tips`)"
         />
@@ -112,7 +112,7 @@ export default {
   data() {
     return {
       formats,
-      curFormat: formats[0],
+      curFormat: formats[localStorage.curFormatIndex || 0],
       setting: clone(setting),
       mainHeight: 0,
       tasks: [],
@@ -142,6 +142,11 @@ export default {
       this.settingTasks = tasks;
       this.settingVisible = true;
       if (type) this.$refs.settingDialog.setActiveTab(type);
+    },
+
+    onCurFormatChange(format, index) {
+      this.curFormat = format;
+      localStorage.curFormatIndex = index;
     },
 
     onFormatSetting(format) {
@@ -250,7 +255,6 @@ export default {
       this.processing = true;
       this.$refs.infobar.startTimer();
       converter.start(
-        this.setting,
         this.tasks,
         (index, total, task) => {
           if (
@@ -274,6 +278,7 @@ export default {
             // task.state === "processing"
           }
         },
+        this.setting,
         this
       );
     },
@@ -497,11 +502,14 @@ export default {
                 this.$t("appName"),
                 "",
                 `${this.$t("about.version")}：${nw.App.manifest.version}`,
+                `${this.$t("about.os")}：${osInfo}`,
                 `${this.$t("about.nwjs")}：${ver.nw}`,
                 `${this.$t("about.chromium")}：${ver.chromium}`,
                 `${this.$t("about.nodejs")}：${ver.node}`,
                 `${this.$t("about.v8")}：${ver.v8}`,
-                `${this.$t("about.os")}：${osInfo}`,
+                `${this.$t("about.sharp")}：${
+                  nw.App.manifest.dependencies.sharp
+                }`,
               ].join("\r\n")
             );
           }

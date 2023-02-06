@@ -21,9 +21,17 @@
       type="seq"
       width="60"
     ></vxe-column>
-    <vxe-column :title="$t('tasks.preview')" width="100">
+    <vxe-column
+      v-if="setting.general.showTaskPreview"
+      :title="$t('tasks.preview')"
+      width="100"
+    >
       <template #default="{ row }">
-        <el-image :src="row.outputUrl || row.url" fit="contain" class="preview" />
+        <el-image
+          :src="row.outputUrl || row.url"
+          fit="contain"
+          class="preview"
+        />
       </template>
     </vxe-column>
     <vxe-column :title="$t('tasks.input')">
@@ -68,14 +76,14 @@
           </span>
         </div>
         <div>
-          <span v-if="row.state === 'completed'" class="size">
+          <span v-if="row.outputSize" class="size">
             {{ formatSize(row.outputSize) }}
           </span>
           <span class="buttons">
             <el-button
               size="small"
               key="view-output-file"
-              :disabled="row.state !== 'completed'"
+              :disabled="!row.output"
               :title="$t('tasks.viewOutputFile')"
               @click.stop="viewFile(row.output)"
             >
@@ -84,7 +92,7 @@
             <el-button
               size="small"
               key="open-output-folder"
-              :disabled="row.state !== 'completed'"
+              :disabled="!row.output"
               :icon="FolderOpened"
               :title="$t('tasks.openOutputFolder')"
               @click.stop="openFolder(row.output)"
@@ -92,7 +100,7 @@
             <el-button
               size="small"
               key="output-image-file-info"
-              :disabled="row.state !== 'completed'"
+              :disabled="!row.output"
               :icon="InfoFilled"
               :title="$t('tasks.imageFileInfo')"
               @click.stop="onImageInfo(row.output)"

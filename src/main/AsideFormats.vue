@@ -2,11 +2,11 @@
   <el-scrollbar>
     <div class="icon-list">
       <AsideFormatIcon
-        v-for="format in formats"
+        v-for="(format, i) in formats"
         :key="format.type"
         :format="format"
         :selected="format.type === curFormat.type"
-        @click="$emit('format-changed', format)"
+        @click="$emit('format-changed', format, i)"
         @contextmenu="onFormatContextmenu(format, $event)"
         @mouseenter="$emit('format-tips', format.type)"
         @mouseleave="$emit('format-tips', '')"

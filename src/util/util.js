@@ -8,6 +8,7 @@ export function deepExtend(out, ...args) {
     for (const [key, value] of Object.entries(obj)) {
       switch (Object.prototype.toString.call(value)) {
         case "[object Object]":
+          if (!out[key]) out[key] = {};
           out[key] = deepExtend(out[key], value);
           break;
         case "[object Array]":
@@ -19,6 +20,10 @@ export function deepExtend(out, ...args) {
     }
   }
   return out;
+}
+
+export function delay(ms = 0) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function getCurrentScreen() {

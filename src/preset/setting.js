@@ -10,13 +10,16 @@ export const defaultSetting = {
     overwriteOutputFile: false,
     afterProcessing: "none",
     skipSameFormat: false,
+    concurrently: 1,
+    timeout: 60,
     outputAnimated: true,
     extractFrames: "allFrames",
     newFolder: true,
     readFolders: true,
     keepDirectoryStructure: true,
-    completeNotify: false,
+    completeNotify: true,
     showTaskIndex: false,
+    showTaskPreview: true,
   },
   modifier: {
     enableResize: false,
@@ -166,6 +169,7 @@ try {
   console.warn(e);
 }
 const setting = deepExtend({}, defaultSetting, userSetting);
+// console.log(setting);
 
 export default setting;
 

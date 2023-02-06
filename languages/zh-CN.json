@@ -32,11 +32,12 @@
   },
   "about": {
     "version": "版本",
+    "os": "系统",
     "nwjs": "NW.js",
     "chromium": "Chromium",
     "nodejs": "Node.js",
     "v8": "V8",
-    "os": "OS"
+    "sharp": "sharp"
   },
   "toolbar": {
     "option": "选项",
@@ -125,6 +126,9 @@
     },
     "skipSameFormat": "跳过相同格式",
     "skipSameFormat_desc": "转换图片格式时，如果输入格式与输出格式相同，则跳过",
+    "concurrently": "并发",
+    "timeout": "超时 (秒)",
+    "timeout_desc": "每张图片的处理超时时长（0为无限制）",
     "animatedImage": "动图",
     "outputAnimated": "输出动图",
     "outputAnimated_desc": "动图转换为 GIF/WebP/APNG 时，是否输出动图（否则输出动画帧）",
@@ -138,9 +142,10 @@
     "readFolders": "读取文件夹",
     "readFolders_desc": "拖放时读取文件夹，否则只读取文件",
     "keepDirectoryStructure": "保持目录结构",
-    "keepDirectoryStructure_desc": "如果设置了输出文件夹，输出时保持拖放的目录结构",
+    "keepDirectoryStructure_desc": "在输出文件夹中保持拖放时的目录结构",
     "gui": "界面",
     "showTaskIndex": "显示任务索引",
+    "showTaskPreview": "显示任务预览",
     "completeNotify": "完成通知"
   },
   "modifier": {

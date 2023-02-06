@@ -21,7 +21,7 @@
 <script>
 import { formatTime } from "@/util/util";
 let timer = -1;
-let elapsed = 0;
+let timestamp;
 
 export default {
   name: "FooterInfobar",
@@ -40,17 +40,20 @@ export default {
   methods: {
     startTimer() {
       this.stopTimer();
-      elapsed = 0;
+      timestamp = Date.now();
       this.time = formatTime(0);
       this.showTime = true;
-      timer = setInterval(() => {
-        elapsed += 1;
-        this.time = formatTime(elapsed);
-      }, 1000);
+      timer = setInterval(() => this.updateTime(), 1000);
     },
 
     stopTimer() {
+      this.updateTime();
       clearInterval(timer);
+    },
+
+    updateTime() {
+      const elapsed = ((Date.now() - timestamp) / 1000) << 0;
+      this.time = formatTime(elapsed);
     },
   },
 };
