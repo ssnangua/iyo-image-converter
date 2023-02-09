@@ -494,6 +494,7 @@ async function nextTask() {
         const { afterProcessing } = task.general;
         if (
           afterProcessing !== "none" &&
+          task.state === "completed" &&
           !comparePaths(task.input, task.output)
         ) {
           if (afterProcessing === "deleteSourceFile") {

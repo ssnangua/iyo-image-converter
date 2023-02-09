@@ -69,7 +69,7 @@ export const defaultSetting = {
     //   quality: 50,
     // },
     tiff: {
-      quality: 80,
+      quality: 50,
     },
     avif: {
       quality: 50,

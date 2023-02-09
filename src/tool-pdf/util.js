@@ -81,7 +81,10 @@ export async function extractImages(pdfs, outputFolder, password, vue, i = 0) {
     });
 }
 
-export function exportPdf(
+// jsPDF limits
+const MAX_PAGE_SIZE = 14400;
+
+export async function exportPdf(
   images,
   fileOut,
   pageSize,
@@ -95,14 +98,44 @@ export function exportPdf(
     text: vue.$t("pdfTool.exporting"),
   });
 
+  const maxHeight = MAX_PAGE_SIZE - margins * 2;
+
+  const pages = [];
+  for (const { path } of images) {
+    const image = sharp(path)
+      .ensureAlpha()
+      .flatten({ background: "#FFFFFF" })
+      .jpeg({ quality });
+    const { width, height } = await image.metadata();
+    if (height > maxHeight) {
+      for (
+        let i = 0, cutCount = Math.ceil(height / maxHeight);
+        i < cutCount;
+        i++
+      ) {
+        const page = image.clone().extract({
+          left: 0,
+          top: maxHeight * i,
+          width,
+          height: Math.min(height - maxHeight * i, maxHeight),
+        });
+        pages.push(page);
+      }
+    } else {
+      pages.push(image);
+    }
+  }
+
   PDF.sharpsToPdf(
-    images.map(({ path }) =>
-      sharp(path)
-        .ensureAlpha()
-        .flatten({ background: "#FFFFFF" })
-        .jpeg({ quality })
-    ),
+    // images.map(({ path }) =>
+    //   sharp(path)
+    //     .ensureAlpha()
+    //     .flatten({ background: "#FFFFFF" })
+    //     .jpeg({ quality })
+    // ),
+    pages,
     fileOut,
+    // { type: "arraybuffer" },
     {
       pdfOptions: {
         format: pageSize === "auto" ? "a4" : pageSize,
@@ -122,6 +155,10 @@ export function exportPdf(
       autoSize: pageSize === "auto",
     }
   )
+    // .then((arraybuffer) => {
+    //   const buffer = Buffer.from(arraybuffer);
+    //   return fs.writeFile(fileOut, buffer);
+    // })
     .then(() => loading.close())
     .catch((err) => {
       showError(err);
