@@ -112,7 +112,7 @@ export default {
   data() {
     return {
       formats,
-      curFormat: formats[localStorage.curFormatIndex || 0],
+      curFormat: formats[parseInt(localStorage.curFormatIndex) || 0],
       setting: clone(setting),
       mainHeight: 0,
       tasks: [],
