@@ -91,7 +91,7 @@ export const formats = [
           key: "tiff",
           toKey: "quality",
           type: "number",
-          default: 80,
+          default: 50,
           step: 1,
           min: 1,
           max: 100,
