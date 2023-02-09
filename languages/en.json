@@ -127,6 +127,7 @@
     "skipSameFormat":"Skip Same Format",
     "skipSameFormat_desc":"When converting the image format, if the input format is the same as the output format, then skip.",
     "concurrently": "Concurrently",
+    "concurrently_desc": "Process multiple images simultaneously.",
     "timeout": "Timeout (s)",
     "timeout_desc": "Processing timeout for each image (0 is indefinitely).",
     "animatedImage": "Animated Image",

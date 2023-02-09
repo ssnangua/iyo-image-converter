@@ -25,8 +25,7 @@
     "resizable": false,
     "position": "center",
     "frame": false,
-    "transparent": true,
-    "show_in_taskbar": false
+    "transparent": true
   },
   "dependencies": {
     "clone": "^2.1.2",

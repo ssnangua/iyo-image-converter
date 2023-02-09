@@ -127,6 +127,7 @@
     "skipSameFormat": "跳过相同格式",
     "skipSameFormat_desc": "转换图片格式时，如果输入格式与输出格式相同，则跳过",
     "concurrently": "并发",
+    "concurrently_desc": "同时处理多个图片",
     "timeout": "超时 (秒)",
     "timeout_desc": "每张图片的处理超时时长（0为无限制）",
     "animatedImage": "动图",
