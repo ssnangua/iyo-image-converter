@@ -4,6 +4,16 @@ import { formats } from "@/preset/formats";
 const isMac = process.platform === "darwin";
 const moreToolsItems = [
   {
+    labelKey: "joinSplitTool.title",
+    icon: isMac ? "" : "paging",
+    cmd: "joinSplitTool",
+  },
+  {
+    labelKey: "filterTool.title",
+    icon: isMac ? "" : "filter",
+    cmd: "filterTool",
+  },
+  {
     labelKey: "animeTool.title",
     icon: isMac ? "" : "anime",
     cmd: "animeTool",
@@ -205,6 +215,26 @@ const resizePixels = [
   { label: "2048 × 1536", value: [2048, 1536] },
   { label: "3200 × 1800", value: [3200, 1800] },
   { label: "3840 × 2160", value: [3840, 2160] },
+  { type: "separator" },
+  { label: "90 × 120", value: [90, 120] },
+  { label: "120 × 160", value: [120, 160] },
+  { label: "150 × 200", value: [150, 200] },
+  { label: "240 × 320", value: [240, 320] },
+  { label: "300 × 400", value: [300, 400] },
+  { label: "480 × 640", value: [480, 640] },
+  { label: "600 × 800", value: [600, 800] },
+  { label: "600 × 1024", value: [600, 1024] },
+  { label: "768 × 1024", value: [768, 1024] },
+  { label: "900 × 1200", value: [900, 1200] },
+  { label: "800 × 1280", value: [800, 1280] },
+  { label: "1024 × 1280", value: [1024, 1280] },
+  { label: "768 × 1366", value: [768, 1366] },
+  { label: "900 × 1440", value: [900, 1440] },
+  { label: "1200 × 1600", value: [1200, 1600] },
+  { label: "1080 × 1920", value: [1080, 1920] },
+  { label: "1536 × 2048", value: [1536, 2048] },
+  { label: "1800 × 3200", value: [1800, 3200] },
+  { label: "2160 × 3840", value: [2160, 3840] },
 ];
 
 const resizePercent = [

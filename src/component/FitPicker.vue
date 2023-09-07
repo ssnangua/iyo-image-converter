@@ -7,7 +7,9 @@
       :value="item"
     >
       <span style="float: left">{{ $t(`fit.${item}`) }}</span>
-      <span style="float: right" class="fit-mode" :class="item">{{ item.value }}</span>
+      <span style="float: right" class="fit-mode" :class="item">{{
+        item.value
+      }}</span>
     </el-option>
   </el-select>
 </template>
@@ -23,9 +25,9 @@ export default {
   },
   data() {
     return {
-      options: ["cover", "contain", "fill", "inside", "outside"].slice(
+      options: ["cover", "contain", "fill", "inside", "outside", "none"].slice(
         0,
-        this.forceSize ? 3 : 5
+        this.forceSize ? 3 : 6
       ),
     };
   },
@@ -41,7 +43,7 @@ export default {
   width: 32px;
   height: 32px;
   background-image: url(@/assets/fit-mode.png);
-  background-size: 160px 32px;
+  background-size: 192px 32px;
   margin-left: 20px;
 }
 .fit-mode.cover {
@@ -58,5 +60,8 @@ export default {
 }
 .fit-mode.outside {
   background-position-x: -128px;
+}
+.fit-mode.none {
+  background-position-x: -160px;
 }
 </style>

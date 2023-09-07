@@ -1,9 +1,5 @@
 <template>
-  <el-dialog
-    :title="$t('editor.tips.title')"
-    width="80%"
-    custom-class="tips-dialog"
-  >
+  <el-dialog :title="$t('editor.tips.title')" width="80%" class="tips-dialog">
     <p>
       <span class="keyboard">Ctrl</span> + <span class="keyboard">O</span>：{{
         $t("animeTool.importImages")

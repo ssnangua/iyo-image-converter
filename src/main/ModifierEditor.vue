@@ -1,23 +1,152 @@
 <template>
   <el-form label-width="auto" class="modifier-editor">
-    <!-- resize start -->
-    <el-divider content-position="left">{{ $t("modifier.resize") }}</el-divider>
+    <!-- crop start -->
+    <el-divider content-position="left">
+      <el-checkbox v-model="value.enableCrop" :label="$t('modifier.crop')" />
+    </el-divider>
 
-    <el-form-item :label="$t('modifier.enable')">
-      <el-switch v-model="value.enableResize" />
+    <el-form-item v-if="value.enableCrop" label=" ">
+      <el-radio-group v-model="value.cropType">
+        <el-radio label="trim">{{ $t("modifier.trim") }}</el-radio>
+        <el-radio label="custom">{{ $t("modifier.custom") }}</el-radio>
+      </el-radio-group>
     </el-form-item>
 
-    <el-form-item :class="{ disabled: value.enableResize === false }">
+    <!-- <el-form-item
+      v-if="value.enableCrop && value.cropType === 'trim'"
+      :label="$t('modifier.trimColor')"
+    >
+      <div style="width: 100%">
+        <ColorPicker
+          v-model="value.trimColor"
+          :predefine="['#000000', '#ffffff']"
+        />
+        <div class="description" v-html="$t('modifier.trimColor_desc')"></div>
+      </div>
+    </el-form-item> -->
+    <el-form-item
+      v-if="value.enableCrop && value.cropType === 'trim'"
+      :label="$t('modifier.trimThreshold')"
+    >
+      <div style="width: 100%">
+        <el-input-number
+          v-model="value.trimThreshold"
+          controls-position="right"
+          :step="1"
+          :step-strictly="true"
+          :min="0"
+          :max="255"
+          style="width: 100px"
+        />
+        <div
+          class="description"
+          v-html="$t('modifier.trimThreshold_desc')"
+        ></div>
+      </div>
+    </el-form-item>
+
+    <el-form-item
+      v-if="value.enableCrop && value.cropType === 'custom'"
+      :label="$t('rectInput.bound')"
+    >
+      <RectInput
+        v-model="crop"
+        :width="value.cropWidth"
+        :height="value.cropHeight"
+        @change="onCropChange"
+      />
+    </el-form-item>
+
+    <el-form-item
+      v-if="value.enableCrop && value.cropType === 'custom'"
+      :label="$t('rectInput.size')"
+    >
+      <el-input-number
+        v-model="value.cropWidth"
+        :step="1"
+        :step-strictly="true"
+        :min="0"
+        :max="100000"
+        :disabled="!!(crop.left && crop.right)"
+        controls-position="right"
+        style="width: 100px"
+      />
+      <span style="margin: 0 10px">×</span>
+      <el-input-number
+        v-model="value.cropHeight"
+        :step="1"
+        :step-strictly="true"
+        :min="0"
+        :max="100000"
+        :disabled="!!(crop.top && crop.bottom)"
+        controls-position="right"
+        style="width: 100px"
+      />
+    </el-form-item>
+
+    <!-- rotate start -->
+    <el-divider content-position="left">
+      <el-checkbox
+        v-model="value.enableRotate"
+        :label="$t('modifier.rotate')"
+      />
+    </el-divider>
+
+    <el-form-item v-if="value.enableRotate" :label="$t('modifier.angle')">
+      <el-input-number
+        v-model="value.angle"
+        :step="1"
+        :step-strictly="true"
+        :min="-180"
+        :max="180"
+        controls-position="right"
+        style="width: 100px"
+      />
+      <el-button
+        :icon="MoreFilled"
+        @click="onAnglePreset"
+        style="min-width: 20px; padding: 8px; margin: 0 10px"
+      />
+    </el-form-item>
+
+    <el-form-item v-if="value.enableRotate" :label="$t('modifier.flop')">
+      <div style="width: 100%">
+        <el-switch v-model="value.flop" />
+        <div class="description" v-html="$t('modifier.flop_desc')"></div>
+      </div>
+    </el-form-item>
+
+    <el-form-item v-if="value.enableRotate" :label="$t('modifier.flip')">
+      <div style="width: 100%">
+        <el-switch v-model="value.flip" />
+        <div class="description" v-html="$t('modifier.flip_desc')"></div>
+      </div>
+    </el-form-item>
+
+    <el-form-item v-if="value.enableRotate" :label="$t('modifier.background')">
+      <ColorPicker
+        v-model="value.background"
+        :predefine="['#000000', '#ffffff']"
+      />
+    </el-form-item>
+    <!-- rotate end -->
+
+    <!-- resize start -->
+    <el-divider content-position="left">
+      <el-checkbox
+        v-model="value.enableResize"
+        :label="$t('modifier.resize')"
+      />
+    </el-divider>
+
+    <el-form-item v-if="value.enableResize" label=" ">
       <el-radio-group v-model="value.resizeType">
         <el-radio label="pixels">{{ $t("modifier.pixels") }}</el-radio>
         <el-radio label="percent">{{ $t("modifier.percent") }}</el-radio>
       </el-radio-group>
     </el-form-item>
 
-    <el-form-item
-      :label="$t('modifier.size')"
-      :class="{ disabled: value.enableResize === false }"
-    >
+    <el-form-item v-if="value.enableResize" :label="$t('modifier.size')">
       <div style="white-space: nowrap">
         <span>
           <el-input-number
@@ -57,19 +186,13 @@
       </div>
     </el-form-item>
 
-    <el-form-item
-      :label="$t('modifier.fit')"
-      :class="{ disabled: value.enableResize === false }"
-    >
+    <el-form-item v-if="value.enableResize" :label="$t('modifier.fit')">
       <div style="width: 100%">
         <FitPicker v-model="value.fit" />
       </div>
     </el-form-item>
 
-    <el-form-item
-      :label="$t('modifier.kernel')"
-      :class="{ disabled: value.enableResize === false }"
-    >
+    <el-form-item v-if="value.enableResize" :label="$t('modifier.kernel')">
       <el-select v-model="value.kernel">
         <el-option
           v-for="option in kernelOptions"
@@ -80,10 +203,7 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item
-      :label="$t('modifier.background')"
-      :class="{ disabled: value.enableResize === false }"
-    >
+    <el-form-item v-if="value.enableResize" :label="$t('modifier.background')">
       <ColorPicker
         v-model="value.background"
         :predefine="['#000000', '#ffffff']"
@@ -91,77 +211,15 @@
     </el-form-item>
     <!-- resize end -->
 
-    <!-- rotate start -->
-    <el-divider content-position="left">{{ $t("modifier.rotate") }}</el-divider>
-
-    <el-form-item :label="$t('modifier.enable')">
-      <el-switch v-model="value.enableRotate" />
-    </el-form-item>
-
-    <el-form-item
-      :label="$t('modifier.angle')"
-      :class="{ disabled: value.enableRotate === false }"
-    >
-      <el-input-number
-        v-model="value.angle"
-        :step="1"
-        :step-strictly="true"
-        :min="-180"
-        :max="180"
-        controls-position="right"
-        style="width: 100px"
-      />
-      <el-button
-        :icon="MoreFilled"
-        @click="onAnglePreset"
-        style="min-width: 20px; padding: 8px; margin: 0 10px"
-      />
-    </el-form-item>
-
-    <el-form-item
-      :label="$t('modifier.flop')"
-      :class="{ disabled: value.enableRotate === false }"
-    >
-      <div style="width: 100%">
-        <el-switch v-model="value.flop" />
-        <div class="description" v-html="$t('modifier.flop_desc')"></div>
-      </div>
-    </el-form-item>
-
-    <el-form-item
-      :label="$t('modifier.flip')"
-      :class="{ disabled: value.enableRotate === false }"
-    >
-      <div style="width: 100%">
-        <el-switch v-model="value.flip" />
-        <div class="description" v-html="$t('modifier.flip_desc')"></div>
-      </div>
-    </el-form-item>
-
-    <el-form-item
-      :label="$t('modifier.background')"
-      :class="{ disabled: value.enableRotate === false }"
-    >
-      <ColorPicker
-        v-model="value.background"
-        :predefine="['#000000', '#ffffff']"
-      />
-    </el-form-item>
-    <!-- rotate end -->
-
     <!-- density start -->
-    <el-divider content-position="left">{{
-      $t("modifier.forceDensity")
-    }}</el-divider>
+    <el-divider content-position="left">
+      <el-checkbox
+        v-model="value.forceDensity"
+        :label="$t('modifier.forceDensity')"
+      />
+    </el-divider>
 
-    <el-form-item :label="$t('modifier.enable')">
-      <el-switch v-model="value.forceDensity" />
-    </el-form-item>
-
-    <el-form-item
-      :label="$t('modifier.density')"
-      :class="{ disabled: value.forceDensity === false }"
-    >
+    <el-form-item v-if="value.forceDensity" :label="$t('modifier.density')">
       <div style="width: 100%">
         <el-input-number
           v-model="value.density"
@@ -185,11 +243,12 @@ import { MoreFilled } from "@element-plus/icons-vue";
 import clone from "clone";
 import FitPicker from "@/component/FitPicker.vue";
 import ColorPicker from "@/component/ColorPicker.vue";
+import RectInput from "@/component/RectInput.vue";
 import { pixelsMenu, percentMenu, anglesMenu } from "./contextmenu";
 
 export default {
   name: "ModifierEditor",
-  components: { FitPicker, ColorPicker },
+  components: { FitPicker, ColorPicker, RectInput },
   props: {
     setting: Object,
   },
@@ -219,6 +278,7 @@ export default {
         },
       ],
       value: {},
+      crop: {},
     };
   },
   computed: {
@@ -231,6 +291,12 @@ export default {
       immediate: true,
       handler(setting) {
         this.value = clone(setting);
+        this.crop = {
+          top: setting.cropTop,
+          right: setting.cropRight,
+          bottom: setting.cropBottom,
+          left: setting.cropLeft,
+        };
       },
     },
     "value.resizeType"(type) {
@@ -276,13 +342,25 @@ export default {
     getValue() {
       return this.value;
     },
+    onCropChange() {
+      const { top, right, bottom, left } = this.crop;
+      Object.assign(this.value, {
+        cropTop: top,
+        cropRight: right,
+        cropBottom: bottom,
+        cropLeft: left,
+      });
+    },
   },
 };
 </script>
 
 <style>
 .modifier-editor .el-divider {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
+}
+.modifier-editor .el-divider + .el-divider {
+  margin-top: 40px;
 }
 .modifier-editor .el-form-item + .el-divider {
   margin-top: 40px;

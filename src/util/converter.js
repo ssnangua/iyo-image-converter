@@ -10,6 +10,7 @@ import APNG from "sharp-apng";
 import UPNG from "upng-js";
 import { formatsMap } from "@/preset/formats";
 import { comparePaths, delay, formatDate, isUndefined } from "./util";
+import { getTextBuffer } from "./canvas";
 import { openAcceptRule } from "./imageFiles";
 import { trash } from "./shell";
 
@@ -164,6 +165,39 @@ export async function rotateImage(image, task, angle, background) {
 async function setModifier(image, task) {
   const background = task.modifier.background || { r: 0, g: 0, b: 0, alpha: 0 };
 
+  const { width: iw, height: ih } = await image.metadata();
+
+  // crop
+  const {
+    enableCrop,
+    cropType,
+    // trimColor,
+    trimThreshold,
+    cropTop: ct = 0,
+    cropRight: cr = 0,
+    cropBottom: cb = 0,
+    cropLeft: cl = 0,
+    cropWidth: cw = 0,
+    cropHeight: ch = 0,
+  } = task.modifier;
+  if (enableCrop) {
+    if (cropType === "trim") {
+      // image.trim({
+      //   background: trimColor,
+      //   threshold: trimThreshold,
+      // });
+      image.trim(trimThreshold);
+    } else if (ct || cr || cb || cl || cw || ch) {
+      let left = cl;
+      let top = ct;
+      let width = Math.min(iw - cl - cr, cw || iw - cl - cr);
+      let height = Math.min(ih - ct - cb, ch || ih - ct - cb);
+      if (width > 0 && height > 0) {
+        image.extract({ left, top, width, height });
+      }
+    }
+  }
+
   // rotate
   const { enableRotate, angle, flop, flip } = task.modifier;
   if (enableRotate) {
@@ -182,75 +216,213 @@ async function setModifier(image, task) {
         animated: task.animated && task.toAnimated,
       });
     }
-    const metadata = await image.metadata();
-    image.resize({
-      fit,
-      width:
-        resizeType === "pixels"
-          ? width
-          : Math.round((metadata.width * width) / 100),
-      height:
-        resizeType === "pixels"
-          ? height
-          : Math.round((metadata.height * height) / 100),
-      kernel,
-      background,
-    });
+
+    const w = resizeType === "pixels" ? width : Math.round((iw * width) / 100);
+    const h =
+      resizeType === "pixels" ? height : Math.round((ih * height) / 100);
+    if (fit === "none") {
+      if (w < iw || h < ih) {
+        image.extract({
+          left: Math.max(0, Math.ceil((iw - w) / 2)),
+          top: Math.max(0, Math.ceil((ih - h) / 2)),
+          width: Math.min(iw, w),
+          height: Math.min(ih, h),
+        });
+      }
+      if (w > iw || h > ih) {
+        const ew = Math.max(0, Math.ceil((w - iw) / 2));
+        const eh = Math.max(0, Math.ceil((h - ih) / 2));
+        image.extend({
+          top: eh,
+          left: ew,
+          bottom: eh,
+          right: ew,
+          background,
+        });
+      }
+    } else {
+      image.resize({
+        fit,
+        width: w,
+        height: h,
+        kernel,
+        background,
+      });
+    }
   }
 
   return image;
 }
 
 async function setWatermark(image, task) {
-  const { enable, image: input } = task.watermark;
-  if (!enable || !input || !fs.existsSync(input)) return;
+  const { enable, type, text, image: input } = task.watermark;
+  if (!enable) return;
+  if (type === "image" && (!input || !fs.existsSync(input))) return;
+  if (type === "text" && text.text.trim().length === 0) return;
 
-  const ext = (await fileTypeFromFile(input)).ext;
-  if (!openAcceptRule.test("." + ext)) return;
+  // watermark
+  let watermark;
+  if (type === "image") {
+    const ext = (await fileTypeFromFile(input)).ext;
+    if (!openAcceptRule.test("." + ext)) return;
+    watermark = await getSharp({ ext, input });
+  } else {
+    const textBuffer = getTextBuffer(0, 0, text);
+    watermark = sharp(textBuffer);
+  }
+  watermark.png().ensureAlpha();
+
+  const { opacity, angle } = task.watermark;
+  if (opacity < 1) {
+    watermark.composite([
+      {
+        input: Buffer.from([255, 255, 255, Math.round(255 * opacity)]),
+        raw: {
+          width: 1,
+          height: 1,
+          channels: 4,
+        },
+        tile: true,
+        blend: "dest-in",
+      },
+    ]);
+  }
+  if (angle !== 0) {
+    watermark = sharp(
+      await watermark
+        .rotate(angle, { background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .toBuffer()
+    );
+  }
 
   const { position, marginX, marginY } = task.watermark;
   const animated = task.animated && task.toAnimated;
   let { width, height, pageHeight } = await image.metadata();
   height = pageHeight || height;
 
-  // watermark
-  const watermark = await getSharp({ ext, input });
-  const meta = await watermark.metadata();
-  const boundWidth = width - marginX;
-  const boundHeight = height - marginY;
+  // 铺满
+  if (position === "repeat") {
+    // 边距配置作为重复水印的间距
+    watermark.extend({
+      top: marginY / 2,
+      left: marginX / 2,
+      bottom: marginY / 2,
+      right: marginX / 2,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    });
+    watermark = sharp(await watermark.toBuffer());
+    // 确保水印的尺寸比目标图片小
+    const meta = await watermark.metadata();
+    if (meta.width > width || meta.height > height) {
+      watermark.extract({
+        left: Math.max(0, Math.ceil((meta.width - width) / 2)),
+        top: Math.max(0, Math.ceil((meta.height - height) / 2)),
+        width: Math.min(meta.width, width),
+        height: Math.min(meta.height, height),
+      });
+    }
+    // 创建一个宽高是目标图片2倍的新图片，并铺满水印
+    watermark = sharp({
+      create: {
+        width: width * 2,
+        height: height * 2,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    })
+      .png()
+      .composite([
+        {
+          input: await watermark.toBuffer(),
+          tile: true,
+          gravity: "northwest",
+        },
+      ]);
+    // 从新图片中随机截取目标图片大小的一个区域，作为目标图片的水印
+    watermark = sharp(await watermark.toBuffer()).extract({
+      left: Math.round(Math.random() * width),
+      top: Math.round(Math.random() * height),
+      width,
+      height,
+    });
+    image.composite([
+      {
+        input: await watermark.toBuffer(),
+        tile: animated,
+        gravity: "northwest",
+      },
+    ]);
+    return;
+  }
+
+  const wMeta = await watermark.metadata();
+  const boundWidth = width - marginX * 2;
+  const boundHeight = height - marginY * 2;
   const alignTop = /top/.test(position);
   const alignBottom = /bottom/.test(position);
   const alignLeft = /left/.test(position);
   const alignRight = /right/.test(position);
-  const wLeft = alignLeft ? 0 : Math.max(0, meta.width - boundWidth);
-  const wTop = alignTop ? 0 : Math.max(0, meta.height - boundHeight);
-  const wWidth = Math.min(boundWidth, meta.width);
-  const wHeight = Math.min(boundHeight, meta.height);
-  watermark.extract({
-    left: wLeft,
-    top: wTop,
-    width: wWidth,
-    height: wHeight,
-  });
+  const alignCenter = position === "center";
+  const alignRandom = position === "random";
+  const wWidth = Math.min(boundWidth, wMeta.width);
+  const wHeight = Math.min(boundHeight, wMeta.height);
 
-  // composite watermark
-  const autoX = width - wWidth - marginX;
-  const autoY = height - wHeight - marginY;
+  // extract watermark
+  if (boundWidth < wMeta.width || boundHeight < wMeta.height) {
+    let wLeft, wTop;
+    if (alignCenter) {
+      wLeft = Math.max(0, Math.ceil((wMeta.width - boundWidth) / 2));
+      wTop = Math.max(0, Math.ceil((wMeta.height - boundHeight) / 2));
+    } else {
+      wLeft = alignRight ? Math.max(0, wMeta.width - boundWidth) : 0;
+      wTop = alignBottom ? Math.max(0, wMeta.height - boundHeight) : 0;
+    }
+    watermark.extract({
+      left: wLeft,
+      top: wTop,
+      width: wWidth,
+      height: wHeight,
+    });
+  }
+
+  let top, left, bottom, right;
+  if (alignCenter) {
+    top = Math.round((height - wHeight) / 2);
+    left = Math.round((width - wWidth) / 2);
+    bottom = height - top - wHeight;
+    right = width - left - wWidth;
+  } else if (alignRandom) {
+    top = Math.round(Math.random() * (boundHeight - wHeight)) + marginY;
+    left = Math.round(Math.random() * (boundWidth - wWidth)) + marginX;
+    bottom = height - top - wHeight;
+    right = width - left - wWidth;
+  } else {
+    const autoX = width - wWidth - marginX;
+    const autoY = height - wHeight - marginY;
+    top = alignTop ? marginY : autoY;
+    left = alignLeft ? marginX : autoX;
+    bottom = alignBottom ? marginY : autoY;
+    right = alignRight ? marginX : autoX;
+  }
+
+  // extend watermark
   if (animated) {
     watermark.extend({
-      top: alignTop ? marginY : autoY,
-      left: alignLeft ? marginX : autoX,
-      bottom: alignBottom ? marginY : autoY,
-      right: alignRight ? marginX : autoX,
+      top,
+      left,
+      bottom,
+      right,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     });
   }
+
+  // composite watermark
   image.composite([
     {
       input: await watermark.toBuffer(),
       tile: animated,
-      top: alignTop ? marginY : autoY,
-      left: alignLeft ? marginX : autoX,
+      top,
+      left,
     },
   ]);
 }
@@ -412,9 +584,10 @@ async function toIcons(setting, task) {
  * Process task
  */
 let job = null;
+let tk = 0;
 
-function callProgress(index) {
-  job.progress(index, job.tasks.length, job.tasks[index]);
+function callProgress(index, isSkip) {
+  job.progress(index, job.tasks.length, job.tasks[index], isSkip);
 }
 
 async function nextTask() {
@@ -439,7 +612,17 @@ async function nextTask() {
     }
 
     if (isUndefined(task.ext)) {
-      task.ext = (await fileTypeFromFile(task.input)).ext;
+      task.ext = (
+        await fileTypeFromFile(task.input)
+          .then((res) => {
+            if (!res) console.warn(`fileTypeFromFile failed: ${task.input}`);
+            return res || { ext: "" };
+          })
+          .catch((err) => {
+            console.warn(err);
+            return { ext: "" };
+          })
+      ).ext;
     }
 
     if (isUndefined(task.animated)) {
@@ -487,7 +670,8 @@ async function nextTask() {
         // Update task
         task.state = info.state || "completed";
         task.output = info.output || output;
-        task.outputUrl = url.pathToFileURL(task.output).toString();
+        task.outputUrl =
+          url.pathToFileURL(task.output).toString() + `?o=${++tk}`;
         task.outputSize = info.size || fs.statSync(task.output).size;
 
         // After processing
@@ -513,6 +697,8 @@ async function nextTask() {
         task.state = "failed";
         callProgress(index);
       });
+  } else {
+    callProgress(index, true);
   }
 
   return nextTask();
@@ -520,6 +706,7 @@ async function nextTask() {
 
 export default {
   start(tasks, progress, setting, vue) {
+    // console.log(tasks);
     job = {
       tasks,
       progress,

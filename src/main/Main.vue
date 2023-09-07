@@ -3,11 +3,11 @@
     <el-header class="header">
       <HeaderToolbar
         :hasTask="hasTask"
+        :progress="progress"
         :hasSelectedTask="hasSelectedTask"
         :processing="processing"
         @show-setting="showSetting()"
         @show-edit-image="openEditImage"
-        @show-filter-tool="openFilterTool"
         @show-more-tools="showMoreTools"
         @add-tasks="onAddTasks"
         @remove-tasks="onRemoveTasks"
@@ -50,6 +50,7 @@
         :info="info || $t(`${curFormat.type}.tips`)"
         :tips="tips"
         :progress="progress"
+        :totalSize="totalSize"
         @complete-notify-changed="setting.general.completeNotify = $event"
       />
     </el-footer>
@@ -88,12 +89,9 @@ import { moreToolsMenu } from "./contextmenu";
 let tasksMap = {};
 let taskKey = 0;
 function getTasksFromMap() {
-  return Object.values(tasksMap).map((task, index) => {
-    task.index = index;
-    task.selected = false;
-    return task;
-  });
+  return Object.values(tasksMap);
 }
+let tk = 0;
 
 const win = nw.Window.get();
 
@@ -123,6 +121,11 @@ export default {
       progress: {
         processed: 0,
         total: 0,
+        failed: 0,
+      },
+      totalSize: {
+        input: 0,
+        output: 0,
       },
       settingVisible: false,
       settingTasks: null,
@@ -159,7 +162,7 @@ export default {
       imageFiles.forEach((file) => {
         tasksMap[taskKey] = {
           key: taskKey,
-          url: url.pathToFileURL(file.path).toString(),
+          url: url.pathToFileURL(file.path).toString() + `?i=${++tk}`,
           rootPath: file.rootPath,
           input: file.path,
           filename: file.name,
@@ -175,11 +178,13 @@ export default {
           inputOptions: undefined,
           options: clone(setting[format.type]),
           output: undefined,
-          outputUrl: "",
+          outputUrl: undefined,
           outputSize: undefined,
           error: undefined,
         };
         taskKey += 1;
+        this.totalSize.input += file.size;
+        this.totalSize.output += file.size;
       });
       this.tasks = getTasksFromMap();
       this.progress.total = this.tasks.length;
@@ -201,19 +206,22 @@ export default {
 
     onRemoveTasks(tasks) {
       if (!tasks) tasks = this.$refs.tasks.getSelectedTasks();
-      tasks.forEach((task) => delete tasksMap[task.key]);
+      tasks.forEach((task) => {
+        this.totalSize.input -= task.size;
+        this.totalSize.output -= task.outputSize || task.size;
+        delete tasksMap[task.key];
+      });
       this.tasks = getTasksFromMap();
       this.hasSelectedTask = false;
-      this.progress.total = this.tasks.length;
-      this.onTasksStateChanged();
+      this.updateProgress();
     },
 
     onClearTasks() {
       tasksMap = {};
       this.tasks = [];
+      this.totalSize = { input: 0, output: 0 };
       this.hasSelectedTask = false;
-      this.progress.total = this.tasks.length;
-      this.onTasksStateChanged();
+      this.progress = { total: 0, processed: 0, failed: 0 };
       this.$refs.infobar.showTime = false;
     },
 
@@ -233,6 +241,7 @@ export default {
           state: "waiting",
           format: clone(format),
           options: clone(setting[format.type]),
+          size: task.input === task.output ? task.outputSize : task.size,
           animated: undefined,
           toAnimated: undefined,
           output: undefined,
@@ -240,14 +249,46 @@ export default {
           error: undefined,
         });
       });
-      this.onTasksStateChanged();
+      this.updateProgress();
     },
 
-    onTasksStateChanged() {
-      const waitingTasks = this.tasks.filter(
-        (task) => task.state === "waiting"
-      );
-      this.progress.processed = this.tasks.length - waitingTasks.length;
+    updateProgress() {
+      let waitingCount = 0,
+        failedCount = 0,
+        inputSize = 0,
+        outputSize = 0;
+      this.tasks.forEach((task) => {
+        inputSize += task.size;
+        outputSize += task.outputSize || task.size;
+        if (task.state === "waiting") waitingCount += 1;
+        if (task.state === "failed") failedCount += 1;
+      });
+      this.progress = {
+        total: this.tasks.length,
+        processed: this.tasks.length - waitingCount,
+        failed: failedCount,
+      };
+      this.totalSize = {
+        input: inputSize,
+        output: outputSize,
+      };
+    },
+
+    onTasksStateChanged(tasks) {
+      tasks.forEach((task) => {
+        if (task.input === task.output && task.outputSize) {
+          task.size = task.outputSize;
+        }
+        Object.assign(task, {
+          url: url.pathToFileURL(task.input).toString() + `?i=${++tk}`,
+          output: undefined,
+          outputUrl: undefined,
+          outputSize: undefined,
+          error: undefined,
+          state: "waiting",
+        });
+      });
+      this.updateProgress();
     },
 
     onStartConvert() {
@@ -255,17 +296,26 @@ export default {
       this.processing = true;
       this.$refs.infobar.startTimer();
       converter.start(
-        this.tasks,
-        (index, total, task) => {
+        // this.tasks,
+        this.$refs.tasks.getTableData(),
+        (index, total, task, isSkip) => {
           if (
             task.state === "completed" ||
             task.state === "failed" ||
             task.state === "ignored"
           ) {
-            const processed = this.progress.processed + 1;
-            this.progress = { processed, total };
+            let processed = this.progress.processed;
+            if (!isSkip) {
+              processed += 1;
+              this.progress.processed = processed;
+              if (task.state === "completed" && task.outputSize) {
+                this.totalSize.output += task.outputSize - task.size;
+              } else if (task.state === "failed") {
+                this.progress.failed += 1;
+              }
+            }
             // all tasks processed
-            if (index === total - 1) {
+            if (index >= total - 1) {
               this.onStopConvert();
               this.completeNotify();
             }
@@ -329,8 +379,8 @@ export default {
           id: "iyo-edit-image",
           title: this.$t("editImage.title"),
           icon: "icons/win32/editimage.png",
-          min_width: 480,
-          min_height: 400,
+          min_width: 740,
+          min_height: 580,
         }
       );
     },
@@ -345,29 +395,26 @@ export default {
           id: "iyo-filter-tool",
           title: this.$t("filterTool.title"),
           icon: "icons/win32/filter.png",
-          min_width: 720,
-          min_height: 480,
+          min_width: 740,
+          min_height: 580,
         }
       );
     },
 
-    showMoreTools(e) {
-      moreToolsMenu.popup(e, ({ cmd }) => {
-        switch (cmd) {
-          case "animeTool":
-            this.openAnimeTool();
-            break;
-          case "icoTool":
-            this.openIcoTool();
-            break;
-          case "pdfTool":
-            this.openPdfTool();
-            break;
-          case "mirageTank":
-            this.openMirageTank();
-            break;
+    openJoinSplitTool() {
+      openPage(
+        "join-split-tool.html",
+        {
+          locale: this.$i18n.locale,
+        },
+        {
+          id: "iyo-join-split-tool",
+          title: this.$t("joinSplitTool.title"),
+          icon: "icons/win32/paging.png",
+          min_width: 980,
+          min_height: 600,
         }
-      });
+      );
     },
 
     openAnimeTool() {
@@ -380,10 +427,8 @@ export default {
           id: "iyo-anime-tool",
           title: this.$t("animeTool.title"),
           icon: "icons/win32/anime.png",
-          width: 600,
-          height: 360,
-          min_width: 480,
-          min_height: 400,
+          min_width: 740,
+          min_height: 580,
         }
       );
     },
@@ -415,8 +460,6 @@ export default {
           id: "iyo-pdf-tool",
           title: this.$t("pdfTool.title"),
           icon: "icons/win32/pdf.png",
-          width: 740,
-          height: 580,
           min_width: 740,
           min_height: 580,
         }
@@ -433,12 +476,35 @@ export default {
           id: "iyo-mirage-tank",
           title: this.$t("mirageTank.title"),
           icon: "icons/win32/mirage-tank.png",
-          width: 600,
-          height: 492,
-          min_width: 480,
-          min_height: 400,
+          min_width: 740,
+          min_height: 580,
         }
       );
+    },
+
+    showMoreTools(e) {
+      moreToolsMenu.popup(e, ({ cmd }) => {
+        switch (cmd) {
+          case "joinSplitTool":
+            this.openJoinSplitTool();
+            break;
+          case "filterTool":
+            this.openFilterTool();
+            break;
+          case "animeTool":
+            this.openAnimeTool();
+            break;
+          case "icoTool":
+            this.openIcoTool();
+            break;
+          case "pdfTool":
+            this.openPdfTool();
+            break;
+          case "mirageTank":
+            this.openMirageTank();
+            break;
+        }
+      });
     },
 
     getTitle() {
@@ -472,6 +538,9 @@ export default {
           break;
         case "editImage":
           this.openEditImage();
+          break;
+        case "joinSplitTool":
+          this.openJoinSplitTool();
           break;
         case "filterTool":
           this.openFilterTool();

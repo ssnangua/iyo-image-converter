@@ -14,9 +14,13 @@
 
 <img src="zh_watermark.jpg" width="600" />
 
-## 图片裁剪
+## 裁切 & 旋转
 
 <img src="zh_crop-rotate.jpg" width="600" />
+
+## 拼接 & 切分
+
+<img src="zh_join-split.jpg" width="600" />
 
 ## 滤镜工具
 
@@ -32,7 +36,7 @@
 
 <img src="zh_ico-tool-extract.jpg" width="600" />
 
-## PDF工具
+## PDF 工具
 
 <img src="zh_pdf-tool.jpg" width="600" />
 

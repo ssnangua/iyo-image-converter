@@ -1,6 +1,13 @@
 {
   "languageName": "English",
   "appName": "iYo Image Converter",
+  "vxe": {
+    "table": {
+      "seqTitle": "#",
+      "sortAsc": "Ascending: lowest to highest",
+      "sortDesc": "Descending: highest to lowest"
+    }
+  },
   "message": {
     "error": "Error",
     "notExist": "{path} does not exist.",
@@ -10,7 +17,8 @@
     "cancel": "Cancel",
     "yes": "Yes",
     "no": "No",
-    "invalidInput": "Invalid Input"
+    "invalidInput": "Invalid Input",
+    "empty": "Empty"
   },
   "menubar": {
     "file": {
@@ -107,7 +115,8 @@
     "contain": "Contain",
     "fill": "Fill",
     "inside": "Inside",
-    "outside": "Outside"
+    "outside": "Outside",
+    "none": "None"
   },
   "general": {
     "name": "General",
@@ -124,8 +133,8 @@
       "deleteSourceFile": "Delete source file (fast)",
       "moveSourceFileToTrash": "Move source file to trash (slow)"
     },
-    "skipSameFormat":"Skip Same Format",
-    "skipSameFormat_desc":"When converting the image format, if the input format is the same as the output format, then skip.",
+    "skipSameFormat": "Skip Same Format",
+    "skipSameFormat_desc": "When converting the image format, if the input format is the same as the output format, then skip.",
     "concurrently": "Concurrently",
     "concurrently_desc": "Process multiple images simultaneously.",
     "timeout": "Timeout (s)",
@@ -149,9 +158,30 @@
     "showTaskPreview": "Show Task Preview",
     "completeNotify": "Complete Notify"
   },
+  "posPicker": {
+    "random": "RANDOM",
+    "repeat": "REPEAT"
+  },
+  "rectInput": {
+    "bound": "Bound",
+    "top": "Top",
+    "right": "Right",
+    "bottom": "Bottom",
+    "left": "Left",
+    "size": "Size",
+    "width": "Width",
+    "height": "Height"
+  },
   "modifier": {
     "name": "Modifier",
     "enable": "Enable",
+    "crop": "Crop",
+    "trim": "Trim",
+    "trimColor": "Color",
+    "trimColor_desc": "Trim pixels from all edges that contain values similar to the given color. Defaults to that of the top-left pixel.",
+    "trimThreshold": "Threshold",
+    "trimThreshold_desc": "Trim pixels from all edges that contain values similar to the top-left pixel.",
+    "custom": "Custom",
     "resize": "Resize",
     "pixels": "Pixels",
     "percent": "Percent",
@@ -169,11 +199,28 @@
     "density": "Density",
     "density_desc": "Number of pixels per inch (DPI)."
   },
+  "styledText": {
+    "preview": "Preview",
+    "text": "Text",
+    "fontFamily": "Font Family",
+    "italic": "Italic",
+    "bold": "Bold",
+    "fontSize": "Font Size",
+    "fontColor": "Font Color",
+    "strokeWidth": "Stroke Width",
+    "strokeColor": "Stroke Color"
+  },
   "watermark": {
     "name": "Watermark",
     "enable": "Enable",
+    "type": "Watermark Type",
+    "typeText": "Text",
+    "typeImage": "Image",
+    "text": "Watermark Text",
     "image": "Watermark Image",
     "chooseWatermarkImage": "Choose Watermark Image",
+    "opacity": "Opacity",
+    "angle": "Angle",
     "position": "Watermark Position",
     "marginX": "Horizontal Margin",
     "marginY": "Vertical Margin"
@@ -327,6 +374,7 @@
     "quality": "Quality",
     "lossless": "Lossless",
     "effort": "effort",
+    "effort_desc": "",
     "chromaSubsampling": "Chroma Subsampling",
     "chromaSubsamplingOptions": {
       "yes": "Yes (4:2:0)",
@@ -340,6 +388,7 @@
     "compression": "Compression",
     "lossless": "Lossless",
     "effort": "effort",
+    "effort_desc": "",
     "chromaSubsampling": "Chroma Subsampling",
     "chromaSubsamplingOptions": {
       "yes": "Yes (4:2:0)",
@@ -358,7 +407,7 @@
     "zoomFit": "Fit Container"
   },
   "editImage": {
-    "title": "Edit Image",
+    "title": "Crop and Rotate",
     "open": "Open",
     "noImage": "Drop image here",
     "crop": "Crop",
@@ -371,6 +420,7 @@
     "outerDarkness": "Outer Darkness",
     "innerHighlight": "Inner Highlight",
     "cropBox": "Crop Box",
+    "maxSize": "Max Size",
     "originalSize": "Original Size",
     "centerCropBox": "Center in canvas",
     "clear": "Clear",
@@ -385,6 +435,11 @@
     "background": "Background",
     "save": "Save",
     "saving": "Saving …",
+    "imageList": "Image List",
+    "addImages": "Add",
+    "clearImages": "Clear",
+    "outputFolder": "Output Folder",
+    "chooseOutputFolder": "Choose Output Folder",
     "tips": {
       "title": "Tips",
       "moveCanvas": "Move canvas",
@@ -392,8 +447,97 @@
       "cropBox": "Create a new crop box, or move crop box",
       "aspectRatio": "Create a square crop box, or fix the aspect ratio when resize crop box",
       "moveCropBox": "Move crop box",
+      "maxCropBox": "Create a max crop box",
       "moveGrid": "Move grid",
       "zoomGrid": "Zoom grid"
+    }
+  },
+  "joinSplitTool": {
+    "title": "Join and Split",
+    "noImage": "Drop images here",
+    "open": "Open",
+    "adding": "Adding...",
+    "clearList": "Clear List",
+    "lock": "Lock Selected Groups",
+    "unlock": "Unlock Selected Groups",
+    "lockCur": "Lock Current Groups",
+    "unlockCur": "Unlock Current Groups",
+    "operation": "Operation",
+    "join": "Join",
+    "split": "Split",
+    "joinDirection": "Join Direction",
+    "splitDirection": "Split Direction",
+    "horizontal": "Horizontal",
+    "vertical": "Vertical",
+    "joinCount": "Join Count",
+    "reverse": "Reverse",
+    "resize": "Resize",
+    "max": "Max",
+    "min": "Min",
+    "original": "Original",
+    "custom": "Custom",
+    "width": "Width",
+    "height": "Height",
+    "margin": "Margin",
+    "background": "Background",
+    "splitPattern": "Pattern",
+    "averageSplit": "Average Split",
+    "splitCount": "Split Count",
+    "fixedSplit": "Fixed Size",
+    "splitSize": "Size",
+    "splitReverse_desc": "The naming order of the splitted images",
+    "clearSplitLines": "Clear Split Lines",
+    "manualSplit": "Manual Split Mode",
+    "quitManualSplit": "Quit Manual Split Mode",
+    "displaySetting": "Display Setting",
+    "showFilename": "Filename",
+    "always": "Always",
+    "hover": "Hover",
+    "never": "Never",
+    "groupSelectedBorderColor": "Group Selected",
+    "imageSelectedBorderColor": "Image Selected",
+    "splitLineColor": "Split Line",
+    "joinOrder": "Join Order",
+    "splitOrder": "Split Order",
+    "applyToSelectedGroups": "Apply To Selected Groups",
+    "applyToSelectedImages": "Apply To Selected Images",
+    "applyToCurrentGroup": "Apply To Current Group",
+    "joinSelectedGroups": "Join Selected Groups",
+    "joinSelectedImages": "Join Selected Images",
+    "saveSelectedGroups": "Save Selected Groups",
+    "saveCurrentGroup": "Save Current Group",
+    "saveAll": "Save All",
+    "outputFolder": "Output Folder",
+    "chooseOutputFolder": "Choose Output Folder",
+    "format": "Format：",
+    "quality": "Quality：",
+    "completed": "Completed",
+    "failed": "Failed",
+    "contextmenu": {
+      "thisGroup": "This Group",
+      "selectedGroups": "Selected Groups",
+      "selectedImages": "Selected Images",
+      "unjoin": "　Unjoin",
+      "clearSplitLines": "　Clear Split Lines",
+      "joinNextImage": "　Join Next Image",
+      "selectBefore": "　Select Before",
+      "selectAfter": "　Select After",
+      "remove": "　Remove",
+      "selectAll": "　Select All",
+      "invertSelection": "　Invert Selection"
+    },
+    "tips": {
+      "title": "Tips",
+      "listView": "List View",
+      "altKey": "Press Alt key to manipulate a single image.",
+      "selectGroup": "Select group, the operation is similar to the file manager.",
+      "selectImage": "Select image, the operation is similar to the file manager.",
+      "dragDrop": "Drag-drop to adjust group/image position.",
+      "contextmenu": "Show the context menu, you can check out some useful shortcuts here.",
+      "lock": "Lock a group to make it unmodifiable.",
+      "groupView": "Group View",
+      "zoom": "Zoom",
+      "move": "Move"
     }
   },
   "filterTool": {

@@ -147,7 +147,7 @@
       v-model="exportDialog"
       :title="$t('icoTool.extractSizes')"
       :width="400"
-      custom-class="extract-dialog"
+      class="extract-dialog"
     >
       <div>
         <el-checkbox-group v-model="extractSizes">

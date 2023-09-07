@@ -1,6 +1,13 @@
 {
   "languageName": "中文",
   "appName": "哎哟图片转换器",
+  "vxe": {
+    "table": {
+      "seqTitle": "#",
+      "sortAsc": "升序：最低到最高",
+      "sortDesc": "降序：最高到最低"
+    }
+  },
   "message": {
     "error": "错误",
     "notExist": "{path} 不存在。",
@@ -10,7 +17,8 @@
     "cancel": "取消",
     "yes": "是",
     "no": "否",
-    "invalidInput": "无效的输入"
+    "invalidInput": "无效的输入",
+    "empty": "无内容"
   },
   "menubar": {
     "file": {
@@ -107,7 +115,8 @@
     "contain": "保持宽高比，包含图片",
     "fill": "不保持宽高比，拉伸图片",
     "inside": "保持宽高比，缩放至长边",
-    "outside": "保持宽高比，缩放至短边"
+    "outside": "保持宽高比，缩放至短边",
+    "none": "不缩放，裁剪或扩展边缘"
   },
   "general": {
     "name": "通用",
@@ -149,10 +158,31 @@
     "showTaskPreview": "显示任务预览",
     "completeNotify": "完成通知"
   },
+  "posPicker": {
+    "random": "随机",
+    "repeat": "铺满"
+  },
+  "rectInput": {
+    "bound": "边界",
+    "top": "上",
+    "right": "右",
+    "bottom": "下",
+    "left": "左",
+    "size": "大小",
+    "width": "宽度",
+    "height": "高度"
+  },
   "modifier": {
     "name": "调整",
     "enable": "启用",
-    "resize": "大小",
+    "crop": "裁剪",
+    "trim": "自动裁剪边缘",
+    "trimColor": "颜色",
+    "trimColor_desc": "默认为左上角的像素值",
+    "trimThreshold": "阈值",
+    "trimThreshold_desc": "自动裁剪与左上角像素颜色值相近的所有边缘",
+    "custom": "自定义",
+    "resize": "调整大小",
     "pixels": "像素",
     "percent": "比例",
     "size": "大小",
@@ -169,11 +199,28 @@
     "density": "分辨率",
     "density_desc": ""
   },
+  "styledText": {
+    "preview": "预览",
+    "text": "文本",
+    "fontFamily": "字体",
+    "italic": "斜体",
+    "bold": "粗体",
+    "fontSize": "字体大小",
+    "fontColor": "字体颜色",
+    "strokeWidth": "描边大小",
+    "strokeColor": "描边颜色"
+  },
   "watermark": {
     "name": "水印",
     "enable": "启用",
+    "type": "水印类型",
+    "typeText": "文本",
+    "typeImage": "图片",
+    "text": "水印文本",
     "image": "水印图片",
     "chooseWatermarkImage": "选择水印图片",
+    "opacity": "不透明度",
+    "angle": "旋转",
     "position": "水印位置",
     "marginX": "水平边距",
     "marginY": "垂直边距"
@@ -360,7 +407,7 @@
     "zoomFit": "适应容器"
   },
   "editImage": {
-    "title": "编辑图片",
+    "title": "裁切与旋转",
     "open": "打开",
     "noImage": "拖放图片到这里",
     "crop": "裁切",
@@ -373,6 +420,7 @@
     "outerDarkness": "外部变暗",
     "innerHighlight": "内部变亮",
     "cropBox": "裁切框",
+    "maxSize": "最大尺寸",
     "originalSize": "原始大小",
     "centerCropBox": "在画布中居中",
     "clear": "清除",
@@ -387,6 +435,11 @@
     "background": "背景",
     "save": "保存",
     "saving": "保存中 …",
+    "imageList": "图片列表",
+    "addImages": "添加",
+    "clearImages": "清空",
+    "outputFolder": "输出文件夹",
+    "chooseOutputFolder": "选择输出文件夹",
     "tips": {
       "title": "提示",
       "moveCanvas": "移动画布",
@@ -394,8 +447,97 @@
       "cropBox": "创建或移动裁切框",
       "aspectRatio": "创建正方形裁切框，或调整裁切框大小时保持宽高比",
       "moveCropBox": "移动裁切框",
+      "maxCropBox": "创建一个最大的裁切框",
       "moveGrid": "移动网格",
       "zoomGrid": "缩放网格"
+    }
+  },
+  "joinSplitTool": {
+    "title": "拼接与切分",
+    "noImage": "拖放图片到这里",
+    "open": "打开",
+    "adding": "添加中…",
+    "clearList": "清空列表",
+    "lock": "锁定选中图组",
+    "unlock": "解除锁定选中图组",
+    "lockCur": "锁定当前图组",
+    "unlockCur": "解除锁定当前图组",
+    "operation": "操作",
+    "join": "拼接",
+    "split": "切分",
+    "joinDirection": "拼接方向",
+    "splitDirection": "切分方向",
+    "horizontal": "水平",
+    "vertical": "垂直",
+    "joinCount": "拼接数量",
+    "reverse": "反序",
+    "resize": "调整大小",
+    "max": "最大",
+    "min": "最小",
+    "original": "原始",
+    "custom": "自定义",
+    "width": "宽度",
+    "height": "高度",
+    "margin": "间距",
+    "background": "背景色",
+    "splitPattern": "切分方式",
+    "averageSplit": "平均切分",
+    "splitCount": "切分数量",
+    "fixedSplit": "固定大小",
+    "splitSize": "切分大小",
+    "splitReverse_desc": "切分后图片的命名顺序",
+    "clearSplitLines": "清除分割线",
+    "manualSplit": "手动切分模式",
+    "quitManualSplit": "退出手动切分模式",
+    "displaySetting": "显示设置",
+    "showFilename": "文件名",
+    "always": "总是显示",
+    "hover": "鼠标移上",
+    "never": "从不显示",
+    "groupSelectedBorderColor": "选中图组",
+    "imageSelectedBorderColor": "选中图片",
+    "splitLineColor": "分割线",
+    "joinOrder": "拼接顺序",
+    "splitOrder": "切分顺序",
+    "applyToSelectedGroups": "应用到选中图组",
+    "applyToSelectedImages": "应用到选中图片",
+    "applyToCurrentGroup": "应用到当前图组",
+    "joinSelectedGroups": "拼接选中图组",
+    "joinSelectedImages": "拼接选中图片",
+    "saveSelectedGroups": "保存选中图组",
+    "saveCurrentGroup": "保存当前图组",
+    "saveAll": "保存全部",
+    "outputFolder": "输出文件夹",
+    "chooseOutputFolder": "选择输出文件夹",
+    "format": "格式：",
+    "quality": "质量：",
+    "completed": "完成",
+    "failed": "失败",
+    "contextmenu": {
+      "thisGroup": "该图组",
+      "selectedGroups": "选中的图组",
+      "selectedImages": "选中的图片",
+      "unjoin": "　打散",
+      "clearSplitLines": "　清除分割线",
+      "joinNextImage": "　拼接下一张图",
+      "selectBefore": "　选中前面的图组",
+      "selectAfter": "　选中后面的图组",
+      "remove": "　移除",
+      "selectAll": "　全选",
+      "invertSelection": "　反选"
+    },
+    "tips": {
+      "title": "提示",
+      "listView": "列表视图",
+      "altKey": "按下 Alt 键以操作单张图片",
+      "selectGroup": "选中图组，操作与文件管理器类似",
+      "selectImage": "选中图片，操作与文件管理器类似",
+      "dragDrop": "拖拽以调整图组/图片位置",
+      "contextmenu": "显示右键菜单，可以在这里看到一些常用的快捷键",
+      "lock": "锁定图组使其不可修改",
+      "groupView": "图组视图",
+      "zoom": "缩放",
+      "move": "移动"
     }
   },
   "filterTool": {

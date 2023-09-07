@@ -9,12 +9,72 @@ body,
   height: 100%;
   margin: 0;
 }
+
 .window {
+  height: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.link-btn {
+  font-size: 12px;
+  line-height: 32px;
+}
+
+.img-list-btn {
+  margin-left: 10px;
+}
+.img-list-wrapper {
+  display: none;
+  flex-flow: column;
+  width: 199px;
+  background-color: #f2f3f5;
+  border-right: 1px solid #a8abb2;
+}
+.extended .img-list-wrapper {
+  display: flex;
+}
+.img-list {
+  overflow: auto;
+  flex: auto;
+  position: relative;
+}
+.img-item {
+  padding: 5px;
+  font-size: 12px;
+}
+.img-item:hover {
+  background-color: #ffffff;
+}
+.img-item.cur {
+  background-color: #ffffff;
+  color: #649cfa;
+}
+.img-item.edited {
+  opacity: 0.5;
+  font-style: italic;
+}
+.img-item + .img-item {
+  margin-top: 1px;
+}
+.img-list-setting {
+  border-top: 1px solid #a8abb2;
+  padding: 5px;
+}
+
+.main {
   width: calc(100vw - 20px);
   height: calc(100vh - 20px);
   background-color: #f2f3f5;
   overflow: hidden;
   padding: 10px;
+}
+
+.extended .main,
+.extended .cropper,
+.extended .cropper .cropper-container,
+.extended .vue-cropper {
+  width: calc(100vw - 220px);
 }
 
 .cropper {
@@ -33,6 +93,9 @@ body,
 .vue-cropper {
   width: calc(100vw - 20px);
   height: calc(100vh - 204px);
+}
+.cropper-hide {
+  display: none;
 }
 .cropper .cropper-canvas {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAA3NCSVQICAjb4U/gAAAABlBMVEXMzMz////TjRV2AAAACXBIWXMAAArrAAAK6wGCiw1aAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAABFJREFUCJlj+M/AgBVhF/0PAH6/D/HkDxOGAAAAAElFTkSuQmCC);
@@ -204,11 +267,9 @@ body,
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.tips {
-  font-size: 12px;
+.tips-btn {
   margin-right: 10px;
   float: right;
-  line-height: 32px;
 }
 .tips-dialog {
   max-width: 600px;
@@ -270,7 +331,7 @@ body,
   position: absolute;
   bottom: -3px;
   right: -3px;
-  content: ' ';
+  content: " ";
   border: 3px solid transparent;
   border-top: 3px solid #606266;
   transform: rotate(-45deg);
@@ -328,4 +389,10 @@ body,
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+.crop-pos {
+  margin-left: 10px;
+  font-size: 12px;
+  color: #606266;
 }

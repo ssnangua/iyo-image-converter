@@ -11,12 +11,11 @@
         <!-- <i class="iconfont icon-edit-image"></i> -->
         {{ $t("editImage.title") }}
       </el-button>
-      <el-button text @click="$emit('show-filter-tool')">
-        <img src="@/assets/filter.png" class="button-icon" />
-        <!-- <i class="iconfont icon-filter"></i> -->
-        {{ $t("filterTool.title") }}
-      </el-button>
-      <el-button text :icon="MoreFilled" @click="$emit('show-more-tools', $event)"></el-button>
+      <el-button
+        text
+        :icon="MoreFilled"
+        @click="$emit('show-more-tools', $event)"
+      ></el-button>
     </span>
     <span>
       <el-button text :disabled="processing" @click="$emit('add-tasks')"
@@ -50,7 +49,7 @@
       <el-button
         text
         type="primary"
-        :disabled="!hasTask || processing"
+        :disabled="progress.processed >= progress.total || processing"
         @click="$emit('start-convert')"
         class="start"
         ><i class="iconfont icon-playfill"></i
@@ -74,6 +73,7 @@ export default {
   props: {
     hasTask: Boolean,
     hasSelectedTask: Boolean,
+    progress: Object,
     processing: Boolean,
   },
   data() {

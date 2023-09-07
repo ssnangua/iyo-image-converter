@@ -228,7 +228,7 @@
       :title="$t('filterTool.batch')"
       :close-on-click-modal="false"
       width="80%"
-      custom-class="dialog"
+      class="dialog"
       @open="batchSetting.batchFilesValue = ''"
     >
       <el-form label-width="auto" style="width: 100%">
@@ -399,6 +399,7 @@ export default {
       canvas: {
         zoom: 0,
         fitZoom: 0,
+        minZoom: 0,
         zoomed: false,
         ctxWidth: 0,
         ctxHeight: 0,
@@ -609,7 +610,8 @@ export default {
       if (!imgInfo) return;
       const { width: iw, height: ih } = imgInfo;
       const { offsetWidth: ow, offsetHeight: oh } = previewEl;
-      const { width: cw, height: ch, left: cl, top: ct } = this.canvas;
+      const { width: cw, height: ch, left: cl, top: ct, minZoom } = this.canvas;
+      zoom = Math.max(zoom, minZoom);
       const width = Math.round(iw * zoom);
       const height = Math.round(ih * zoom);
       let left, top;
@@ -681,6 +683,7 @@ export default {
       const { offsetWidth, offsetHeight } = previewEl;
       let zoom = Math.min(offsetWidth / width, offsetHeight / height);
       this.canvas.fitZoom = zoom;
+      this.canvas.minZoom = Math.min(100 / width, 100 / height);
       if (!this.canvas.zoomed) {
         if (zoom * scaleFactor > 1) zoom = 1 / scaleFactor;
         this.canvas.zoom = zoom;

@@ -13,6 +13,11 @@ module.exports = defineConfig({
       template: "public/index.html",
       filename: "edit-image.html",
     },
+    joinSplitTool: {
+      entry: "src/tool-join-split/joinSplitTool.js",
+      template: "public/index.html",
+      filename: "join-split-tool.html",
+    },
     icoTool: {
       entry: "src/tool-ico/icoTool.js",
       template: "public/index.html",

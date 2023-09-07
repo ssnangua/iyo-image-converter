@@ -1,96 +1,171 @@
 <template>
-  <div class="window">
-    <div class="header" style="margin-bottom: 10px">
-      <el-button
-        type="primary"
-        @click="onOpen"
-        style="padding: 0 10px; cursor: pointer"
-      >
-        <i class="iconfont icon-image"></i>
-        <span style="margin-left: 5px">{{ $t("editImage.open") }}</span>
-      </el-button>
-      <el-link :underline="false" class="tips" @click="tipsDialog = true">
-        <i class="iconfont icon-tips"></i>
-        {{ $t("editImage.tips.title") }}
-      </el-link>
-    </div>
-    <div
-      class="cropper"
-      :class="[
-        mode,
-        grid.visible ? 'grid' : '',
-        grid.dark ? 'grid-dark' : '',
-        moveMode ? 'move-mode' : '',
-        dragging ? 'dragging' : '',
-        preview ? 'preview' : '',
-        previewLight ? 'preview-light' : '',
-        cropping ? 'cropping' : '',
-      ]"
-      @mousedown="onCropperMousedown"
-      @mousewheel="onCropperMousewheel"
-    >
-      <VueCropper
-        v-if="img"
-        ref="cropper"
-        :src="img"
-        :viewMode="1"
-        :autoCrop="false"
-        :background="false"
-        :highlight="true"
-        :toggleDragModeOnDblclick="false"
-        :responsive="false"
-        @ready="onCropperReady"
-        @zoom="onZoomChange"
-        @cropstart="onCropStart"
-        @cropmove="onCropChange"
-        @cropend="onCropEnd"
-        class="vue-cropper"
-        :style="{ opacity: cropperReady ? 1 : 0.001 }"
-      ></VueCropper>
-      <div v-else class="no-image">
-        {{ $t("editImage.noImage") }}
+  <div class="window" :class="{ extended: showImgList }">
+    <div class="img-list-wrapper">
+      <div v-if="imgList.length > 0" class="img-list">
+        <div
+          class="img-item"
+          v-for="(item, index) in imgList"
+          :key="index"
+          :title="item.path"
+          :class="{ cur: item === img, edited: item.edited }"
+          @click="loadImage(item)"
+        >
+          {{ item.name }}
+        </div>
       </div>
-      <div
-        v-if="cropperReady && mode === 'rotate' && grid.visible"
-        class="cropper-grid"
-        :style="{
-          'background-size': `${grid.size}px ${grid.size}px`,
-          'background-position': `${grid.top}px ${grid.left}px`,
-        }"
-      ></div>
+      <div v-else class="img-list">
+        <div class="no-image">
+          {{ $t("editImage.noImage") }}
+        </div>
+      </div>
+      <div class="img-list-setting">
+        <div style="margin: -5px 0 5px 0">
+          <el-link :underline="false" class="link-btn" @click="onOpen">
+            <i
+              class="iconfont icon-f-insert"
+              style="font-size: 12px; margin-right: 4px"
+            ></i>
+            {{ $t("editImage.addImages") }}
+          </el-link>
+          <el-link
+            :underline="false"
+            :disabled="imgList.length === 0"
+            class="link-btn"
+            @click="imgList = []"
+            style="float: right"
+          >
+            <i
+              class="iconfont icon-f-clear"
+              style="font-size: 12px; margin-right: 4px"
+            ></i>
+            {{ $t("editImage.clearImages") }}
+          </el-link>
+        </div>
+        <div>
+          <FilePicker
+            v-model="outputFolder"
+            :options="{
+              nwdirectorydescKey: 'editImage.chooseOutputFolder',
+              nwdirectory: true,
+            }"
+            :placeholder="$t('editImage.outputFolder')"
+          />
+        </div>
+      </div>
     </div>
 
-    <!-- toolbar start -->
-    <div class="toolbar">
-      <div class="modes">
-        <div>
-          <span
-            class="icon-btn"
-            @click="onZoom('zoomIn')"
-            :title="$t('zoomTool.zoomIn')"
-            ><i class="iconfont icon-zoom-in"></i
-          ></span>
-          <span
-            class="icon-btn"
-            @click="onZoom('zoomOut')"
-            :title="$t('zoomTool.zoomOut')"
-            ><i class="iconfont icon-zoom-out"></i
-          ></span>
-          <span
-            class="icon-btn"
-            @click="onZoom('zoom1')"
-            :title="$t('zoomTool.zoom1')"
-            ><i class="iconfont icon-zoom-1"></i
-          ></span>
-          <span
-            class="icon-btn"
-            @click="onZoom('zoomFit')"
-            :title="$t('zoomTool.zoomFit')"
-            ><i class="iconfont icon-zoom-fit"></i
-          ></span>
+    <div class="main">
+      <div class="header" style="margin-bottom: 10px">
+        <el-button
+          type="primary"
+          @click="onOpen"
+          style="padding: 0 10px; cursor: pointer"
+          tabindex="-1"
+        >
+          <i class="iconfont icon-image"></i>
+          <span style="margin-left: 5px">{{ $t("editImage.open") }}</span>
+        </el-button>
+
+        <el-link
+          :underline="false"
+          :type="showImgList ? 'primary' : 'default'"
+          class="link-btn img-list-btn"
+          @click="
+            showImgList = !showImgList;
+            onResize();
+          "
+        >
+          <i class="iconfont icon-images" style="margin-right: 4px"></i>
+          {{ $t("editImage.imageList") }}
+        </el-link>
+
+        <el-link
+          :underline="false"
+          class="link-btn tips-btn"
+          @click="tipsDialog = true"
+        >
+          <i class="iconfont icon-tips"></i>
+          {{ $t("editImage.tips.title") }}
+        </el-link>
+      </div>
+      <div
+        class="cropper"
+        :class="[
+          mode,
+          grid.visible ? 'grid' : '',
+          grid.dark ? 'grid-dark' : '',
+          moveMode ? 'move-mode' : '',
+          dragging ? 'dragging' : '',
+          preview ? 'preview' : '',
+          previewLight ? 'preview-light' : '',
+          cropping ? 'cropping' : '',
+        ]"
+        @mousedown="onCropperMousedown"
+        @mousewheel="onCropperMousewheel"
+      >
+        <VueCropper
+          v-if="img"
+          ref="cropper"
+          :src="img.url"
+          :viewMode="1"
+          :autoCrop="false"
+          :background="false"
+          :highlight="true"
+          :toggleDragModeOnDblclick="false"
+          :responsive="false"
+          @ready="onCropperReady"
+          @zoom="onZoomChange"
+          @cropstart="onCropStart"
+          @cropmove="onCropChange"
+          @cropend="onCropEnd"
+          class="vue-cropper"
+          :class="{ 'cropper-hide': imgList.length === 0 }"
+          :style="{ opacity: cropperReady ? 1 : 0.001 }"
+        ></VueCropper>
+        <div v-if="!img || imgList.length === 0" class="no-image">
+          {{ $t("editImage.noImage") }}
         </div>
-        <div class="tip">
-          <!-- <span
+        <div
+          v-if="cropperReady && mode === 'rotate' && grid.visible"
+          class="cropper-grid"
+          :style="{
+            'background-size': `${grid.size}px ${grid.size}px`,
+            'background-position': `${grid.top}px ${grid.left}px`,
+          }"
+        ></div>
+      </div>
+
+      <!-- toolbar start -->
+      <div class="toolbar">
+        <div class="modes">
+          <div>
+            <span
+              class="icon-btn"
+              @click="onZoom('zoomIn')"
+              :title="$t('zoomTool.zoomIn')"
+              ><i class="iconfont icon-zoom-in"></i
+            ></span>
+            <span
+              class="icon-btn"
+              @click="onZoom('zoomOut')"
+              :title="$t('zoomTool.zoomOut')"
+              ><i class="iconfont icon-zoom-out"></i
+            ></span>
+            <span
+              class="icon-btn"
+              @click="onZoom('zoom1')"
+              :title="$t('zoomTool.zoom1')"
+              ><i class="iconfont icon-zoom-1"></i
+            ></span>
+            <span
+              class="icon-btn"
+              @click="onZoom('zoomFit')"
+              :title="$t('zoomTool.zoomFit')"
+              ><i class="iconfont icon-zoom-fit"></i
+            ></span>
+          </div>
+          <div class="tip">
+            <!-- <span
             v-if="mode === 'crop'"
             :title="$t('editImage.cropTip')"
             v-html="$t('editImage.cropTip')"
@@ -100,217 +175,234 @@
             :title="$t('editImage.rotateTip')"
             v-html="$t('editImage.rotateTip')"
           ></span> -->
+            <span v-if="canvas && canvas.width > 0" class="crop-pos"
+              >{{ Math.round((canvas.width || 0) / zoom) }} ×
+              {{ Math.round((canvas.height || 0) / zoom) }}</span
+            >
+          </div>
+          <div>
+            <span
+              class="icon-btn border"
+              :class="{ active: mode === 'crop' }"
+              @click="mode = 'crop'"
+              :title="$t('editImage.crop')"
+              ><i class="iconfont icon-crop"></i
+            ></span>
+            <span
+              class="icon-btn border"
+              :class="{ active: mode === 'rotate' }"
+              @click="mode = 'rotate'"
+              :title="$t('editImage.rotate')"
+              ><i class="iconfont icon-rotate"></i
+            ></span>
+            <span
+              class="icon-btn border has-submenu"
+              :class="{
+                disabled: mode === 'crop' && !cropped,
+                active: grid.visible,
+              }"
+              @click="grid.visible = !grid.visible"
+              @contextmenu="grid.dark = !grid.dark"
+              :title="$t('editImage.showGrid')"
+              ><i class="iconfont icon-grid"></i
+            ></span>
+            <span
+              class="icon-btn border has-submenu"
+              :class="{ disabled: !cropped, active: preview }"
+              @mouseenter="preview = true"
+              @mouseleave="preview = false"
+              @contextmenu="previewLight = !previewLight"
+              :title="$t('editImage.preview')"
+              ><i class="iconfont icon-preview"></i
+            ></span>
+          </div>
         </div>
-        <div>
-          <span
-            class="icon-btn border"
-            :class="{ active: mode === 'crop' }"
-            @click="mode = 'crop'"
-            :title="$t('editImage.crop')"
-            ><i class="iconfont icon-crop"></i
-          ></span>
-          <span
-            class="icon-btn border"
-            :class="{ active: mode === 'rotate' }"
-            @click="mode = 'rotate'"
-            :title="$t('editImage.rotate')"
-            ><i class="iconfont icon-rotate"></i
-          ></span>
-          <span
-            class="icon-btn border has-submenu"
-            :class="{
-              disabled: mode === 'crop' && !cropped,
-              active: grid.visible,
-            }"
-            @click="grid.visible = !grid.visible"
-            @contextmenu="grid.dark = !grid.dark"
-            :title="$t('editImage.showGrid')"
-            ><i class="iconfont icon-grid"></i
-          ></span>
-          <span
-            class="icon-btn border has-submenu"
-            :class="{ disabled: !cropped, active: preview }"
-            @mouseenter="preview = true"
-            @mouseleave="preview = false"
-            @contextmenu="previewLight = !previewLight"
-            :title="$t('editImage.preview')"
-            ><i class="iconfont icon-preview"></i
-          ></span>
-        </div>
-      </div>
 
-      <!-- crop options -->
-      <div v-if="mode === 'crop'">
-        <div style="white-space: nowrap">
-          <span class="label">{{ $t("editImage.cropBox") }}</span>
-          <el-input-number
-            v-model="crop.width"
-            :disabled="crop.height === 0"
-            :step="1"
-            :step-strictly="true"
-            :min="0"
-            :max="Math.floor(canvas.naturalWidth)"
-            controls-position="right"
-            style="width: 100px"
-          />
-          <span style="margin: 0 10px">×</span>
-          <el-input-number
-            v-model="crop.height"
-            :disabled="crop.height === 0 || cropRatio !== 'freeHand'"
-            :step="1"
-            :step-strictly="true"
-            :min="0"
-            :max="Math.floor(canvas.naturalHeight)"
-            controls-position="right"
-            style="width: 100px"
-          />
-          <el-button
-            :icon="MoreFilled"
-            @click="showCropSizesMenu"
-            style="min-width: 20px; padding: 8px; margin: 0 10px"
-          />
-          <el-button
-            :disabled="!cropped"
-            @click="centerCropBox"
-            :title="$t('editImage.centerCropBox')"
-            style="width: 16px; margin: 0px; min-width: 32px"
-            ><i class="iconfont icon-position-center"></i
-          ></el-button>
-          <el-button
-            :disabled="!cropped"
-            style="margin: 0; margin-left: 10px"
-            @click="clearCropBox"
-            >{{ $t("editImage.clear") }}</el-button
-          >
-          <!-- <span class="label">(0,0)</span> -->
-        </div>
-        <div style="white-space: nowrap; margin-top: 4px">
-          <span class="label">{{ $t("editImage.cropRatio") }}</span>
-          <el-select v-model="cropRatio" placeholder=" ">
-            <el-option
-              v-for="option in cropRatios"
-              :key="option.value"
-              :label="option.label || $t(option.labelKey)"
-              :value="option.value"
-            />
-          </el-select>
-          <el-checkbox
-            v-if="cropRatio !== 'freeHand' && cropRatio !== 1"
-            v-model="flipRatio"
-            style="margin-left: 10px"
-          >
-            {{ $t("editImage.flipRatio") }}
-          </el-checkbox>
-        </div>
-      </div>
-
-      <!-- rotate options start -->
-      <div v-if="mode === 'rotate'" style="display: flex; flex-flow: row">
-        <div style="flex: auto">
-          <div style="display: flex; flex-flow: row">
-            <el-radio-group v-model="rotateType">
-              <el-radio label="any">
-                {{ $t("editImage.anyAngle") }}
-              </el-radio>
-            </el-radio-group>
-            <div v-if="rotateType === 'any'" style="flex: auto; margin: 0 20px">
-              <el-slider v-model="rotate" :step="0.1" :min="-180" :max="180" />
-            </div>
+        <!-- crop options -->
+        <div v-if="mode === 'crop'">
+          <div style="white-space: nowrap">
+            <span class="label">{{ $t("editImage.cropBox") }}</span>
             <el-input-number
-              v-if="rotateType === 'any'"
-              v-model="rotate"
-              :step="0.1"
+              v-model="crop.width"
+              :disabled="crop.height === 0"
+              :step="1"
               :step-strictly="true"
-              :min="-180"
-              :max="180"
+              :min="0"
+              :max="Math.floor(canvas.naturalWidth)"
+              controls-position="right"
+              style="width: 100px"
+            />
+            <span style="margin: 0 10px">×</span>
+            <el-input-number
+              v-model="crop.height"
+              :disabled="crop.height === 0 || cropRatio !== 'freeHand'"
+              :step="1"
+              :step-strictly="true"
+              :min="0"
+              :max="Math.floor(canvas.naturalHeight)"
               controls-position="right"
               style="width: 100px"
             />
             <el-button
-              v-if="rotateType === 'any'"
-              :disabled="rotate === 0"
-              @click="rotate = 0"
-              style="margin-left: 10px"
-              >{{ $t("editImage.reset") }}</el-button
+              :icon="MoreFilled"
+              @click="showCropSizesMenu"
+              style="min-width: 20px; padding: 8px; margin: 0 0 0 10px"
+            />
+            <el-button
+              :disabled="!cropped"
+              @click="centerCropBox"
+              :title="$t('editImage.centerCropBox')"
+              style="width: 16px; margin: 0 0 0 10px; min-width: 32px"
+            >
+              <i class="iconfont icon-position-center"></i>
+            </el-button>
+            <el-button
+              :disabled="!cropped"
+              style="margin: 0 0 0 10px"
+              @click="clearCropBox"
+              >{{ $t("editImage.clear") }}</el-button
+            >
+            <span v-if="cropped" class="crop-pos"
+              >({{ Math.round((crop.left || 0) / zoom) }},
+              {{ Math.round((crop.top || 0) / zoom) }})</span
             >
           </div>
-          <div>
-            <el-radio-group v-model="rotateType" style="flex-wrap: nowrap">
-              <el-radio label="-90">
-                <i class="iconfont icon-rotate-left"></i>
-                -90
-              </el-radio>
-              <el-radio label="90">
-                <i class="iconfont icon-rotate-right"></i>
-                90
-              </el-radio>
-              <el-radio label="180">
-                <i class="iconfont icon-rotate-180"></i>
-                180
-              </el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-        <div style="margin-left: 10px">
-          <div>
-            <el-checkbox v-model="flop">
-              <i class="iconfont icon-flip"></i>
-              {{ $t("editImage.flop") }}
-            </el-checkbox>
-          </div>
-          <div>
-            <el-checkbox v-model="flip">
-              <span style="display: inline-block; transform: rotate(90deg)">
-                <i class="iconfont icon-flip"></i>
-              </span>
-              {{ $t("editImage.flip") }}
+          <div style="white-space: nowrap; margin-top: 4px">
+            <span class="label">{{ $t("editImage.cropRatio") }}</span>
+            <el-select v-model="cropRatio" placeholder=" ">
+              <el-option
+                v-for="option in cropRatios"
+                :key="option.value"
+                :label="option.label || $t(option.labelKey)"
+                :value="option.value"
+              />
+            </el-select>
+            <el-checkbox
+              v-if="cropRatio !== 'freeHand' && cropRatio !== 1"
+              v-model="flipRatio"
+              style="margin-left: 10px"
+            >
+              {{ $t("editImage.flipRatio") }}
             </el-checkbox>
           </div>
         </div>
-      </div>
-      <!-- rotate options end -->
-    </div>
-    <!-- toolbar end -->
 
-    <div class="footer">
-      <span v-if="mode === 'crop'" class="footer-append">
-        <span class="label">{{ $t("editImage.outerDarkness") }}</span>
-        <span class="outerDarkness">
-          <el-slider
-            v-model="outerDarkness"
-            :disabled="!cropped"
-            :step="0.01"
-            :min="0"
-            :max="1"
-            :show-tooltip="false"
-          />
+        <!-- rotate options start -->
+        <div v-if="mode === 'rotate'" style="display: flex; flex-flow: row">
+          <div style="flex: auto">
+            <div style="display: flex; flex-flow: row">
+              <el-radio-group v-model="rotateType">
+                <el-radio label="any">
+                  {{ $t("editImage.anyAngle") }}
+                </el-radio>
+              </el-radio-group>
+              <div
+                v-if="rotateType === 'any'"
+                style="flex: auto; margin: 0 20px"
+              >
+                <el-slider
+                  v-model="rotate"
+                  :step="0.1"
+                  :min="-180"
+                  :max="180"
+                />
+              </div>
+              <el-input-number
+                v-if="rotateType === 'any'"
+                v-model="rotate"
+                :step="0.1"
+                :step-strictly="true"
+                :min="-180"
+                :max="180"
+                controls-position="right"
+                style="width: 100px"
+              />
+              <el-button
+                v-if="rotateType === 'any'"
+                :disabled="rotate === 0"
+                @click="rotate = 0"
+                style="margin-left: 10px"
+                >{{ $t("editImage.reset") }}</el-button
+              >
+            </div>
+            <div>
+              <el-radio-group v-model="rotateType" style="flex-wrap: nowrap">
+                <el-radio label="-90">
+                  <i class="iconfont icon-rotate-left"></i>
+                  -90
+                </el-radio>
+                <el-radio label="90">
+                  <i class="iconfont icon-rotate-right"></i>
+                  90
+                </el-radio>
+                <el-radio label="180">
+                  <i class="iconfont icon-rotate-180"></i>
+                  180
+                </el-radio>
+              </el-radio-group>
+            </div>
+          </div>
+          <div style="margin-left: 10px">
+            <div>
+              <el-checkbox v-model="flop">
+                <i class="iconfont icon-flip"></i>
+                {{ $t("editImage.flop") }}
+              </el-checkbox>
+            </div>
+            <div>
+              <el-checkbox v-model="flip">
+                <span style="display: inline-block; transform: rotate(90deg)">
+                  <i class="iconfont icon-flip"></i>
+                </span>
+                {{ $t("editImage.flip") }}
+              </el-checkbox>
+            </div>
+          </div>
+        </div>
+        <!-- rotate options end -->
+      </div>
+      <!-- toolbar end -->
+
+      <div class="footer">
+        <span v-if="mode === 'crop'" class="footer-append">
+          <span class="label">{{ $t("editImage.outerDarkness") }}</span>
+          <span class="outerDarkness">
+            <el-slider
+              v-model="outerDarkness"
+              :disabled="!cropped"
+              :step="0.01"
+              :min="0"
+              :max="1"
+              :show-tooltip="false"
+            />
+          </span>
         </span>
-      </span>
-      <span
-        v-if="mode === 'rotate' && rotateType === 'any'"
-        class="footer-append"
-      >
-        <span style="white-space: nowrap">
-          <span class="label">{{ $t("editImage.background") }}</span>
-          <ColorPicker v-model="background" />
-        </span>
-      </span>
-      <span style="white-space: nowrap">
-        <el-button
-          type="primary"
-          @click="onSave"
-          :disabled="!img"
-          :style="{ cursor: img ? 'pointer' : 'not-allowed' }"
-          >{{ $t("editImage.save") }}</el-button
+        <span
+          v-if="mode === 'rotate' && rotateType === 'any'"
+          class="footer-append"
         >
-      </span>
+          <span style="white-space: nowrap">
+            <span class="label">{{ $t("editImage.background") }}</span>
+            <ColorPicker v-model="background" />
+          </span>
+        </span>
+        <span style="white-space: nowrap">
+          <el-button
+            type="primary"
+            @click="onSave"
+            :disabled="!img"
+            :style="{ cursor: img ? 'pointer' : 'not-allowed' }"
+            >{{ $t("editImage.save") }}</el-button
+          >
+        </span>
+      </div>
     </div>
 
     <el-dialog
       v-model="tipsDialog"
       :title="$t('editImage.tips.title')"
       width="80%"
-      custom-class="tips-dialog"
+      class="tips-dialog"
     >
       <p>
         <i class="iconfont icon-mouse-wheel"></i>：{{
@@ -347,6 +439,12 @@
           $t("editImage.tips.moveCropBox")
         }}
       </p>
+      <p>
+        <span class="keyboard">Ctrl</span> +
+        <span class="keyboard square">A</span>：{{
+          $t("editImage.tips.maxCropBox")
+        }}
+      </p>
       <el-divider content-position="left">{{
         $t("editImage.rotate")
       }}</el-divider>
@@ -366,8 +464,9 @@
 </template>
 
 <script>
-import url from "url";
+import fs from "fs-extra";
 import path from "path";
+import url from "url";
 import { shallowRef } from "vue";
 import clone from "clone";
 import { showOpenDialog, showSaveDialog } from "nwjs-dialog";
@@ -377,6 +476,7 @@ import {
   getCurrentScreen,
   getSearches,
   humanFileSize,
+  getOutputPath,
   comparePaths,
 } from "@/util/util";
 import {
@@ -385,7 +485,8 @@ import {
   saveAccept,
   saveAcceptRule,
 } from "@/util/imageFiles";
-import ColorPicker from "@/component/ColorPicker";
+import ColorPicker from "@/component/ColorPicker.vue";
+import FilePicker from "@/component/FilePicker.vue";
 import { cropSizesMenu } from "./contextmenu";
 import VueCropper from "./VueCropper";
 import { applyEditor } from "./util";
@@ -393,6 +494,15 @@ import "./cropper.css";
 import { showError, showLoading } from "@/util/message";
 
 const { scaleFactor } = getCurrentScreen();
+
+function getImgItem(imagePath) {
+  return {
+    path: imagePath,
+    url: url.pathToFileURL(imagePath).toString(),
+    name: path.basename(imagePath),
+    edited: false,
+  };
+}
 
 const defaultData = {
   zoom: 1,
@@ -435,10 +545,11 @@ const defaultData = {
 
 let mouseX, mouseY, startY, startX;
 let tempCropBox;
+let resizeTimer = -1;
 
 export default {
   name: "EditImage",
-  components: { VueCropper, ColorPicker },
+  components: { VueCropper, ColorPicker, FilePicker },
   data() {
     return Object.assign(
       {
@@ -456,6 +567,9 @@ export default {
           { label: "16:9", value: 16 / 9 },
         ],
         cropping: false,
+        showImgList: false,
+        imgList: [],
+        outputFolder: "",
       },
       clone(defaultData)
     );
@@ -475,18 +589,26 @@ export default {
       Object.assign(this, clone(defaultData));
     },
 
+    setImgList(images) {
+      const needLoadImage = this.imgList.length === 0 || !this.showImgList;
+      const imgList = images.map((image) => getImgItem(image));
+      if (this.showImgList) this.imgList = this.imgList.concat(imgList);
+      else this.imgList = imgList;
+      this.imgList.forEach((item, index) => (item.index = index));
+      if (needLoadImage && imgList.length > 0) this.loadImage(imgList[0]);
+    },
+
     onOpen() {
-      showOpenDialog({ accept: openAccept }).then(([image]) => {
-        this.loadImage(image);
+      showOpenDialog({ accept: openAccept, multiple: true }).then((images) => {
+        this.setImgList(images);
       });
     },
 
-    async loadImage(input) {
+    async loadImage(img) {
       this.reset();
-      const img = url.pathToFileURL(input).toString();
-      if (this.img) this.cropper.replace(img);
+      if (this.img) this.cropper.replace(img.url);
       this.img = img;
-      this.imgInfo = await getImageInfo(input);
+      this.imgInfo = await getImageInfo(img.path);
       this.cropRatios[1].value = this.imgInfo.width / this.imgInfo.height;
       this.updateTitle();
     },
@@ -496,13 +618,11 @@ export default {
     },
 
     onCropperReady() {
-      setTimeout(() => {
-        this.updateCropper();
-        this.onZoom("zoomFit");
-        this.cropperReady = true;
-        window.cropper = this.cropper.cropper;
-        this.updateTitle();
-      }, 0);
+      this.updateCropper();
+      this.onZoom("zoomFit");
+      this.cropperReady = true;
+      window.cropper = this.cropper.cropper;
+      this.updateTitle();
     },
 
     onZoomChange(e) {
@@ -580,6 +700,7 @@ export default {
     },
 
     onCropStart() {
+      document.activeElement.blur();
       this.cropping = true;
       this.updateCropper("outerDarkness");
     },
@@ -746,36 +867,60 @@ export default {
         )}) ${zoom}`;
     },
 
+    onResize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (this.img) this.cropper.cropper.initContainer();
+      }, 50);
+    },
+
     async onSave() {
-      const input = this.imgInfo.location;
-      const { dir, base, ext } = path.parse(input);
-      return showSaveDialog({
-        nwworkingdir: dir,
-        nwsaveas: base,
-        accept: saveAccept,
-      }).then(async ([fileOut]) => {
-        if (!saveAcceptRule.test(fileOut)) fileOut += ext;
+      const { img, outputFolder, imgList } = this;
+      const { dir, base, ext } = path.parse(img.path);
+      let output;
+      if (outputFolder && fs.existsSync(outputFolder)) {
+        output = path.join(outputFolder, this.img.name);
+      } else {
+        output = await showSaveDialog({
+          nwworkingdir: dir,
+          nwsaveas: base,
+          accept: saveAccept,
+        }).then(([fileOut]) => {
+          if (!saveAcceptRule.test(fileOut)) fileOut += ext;
+          return fileOut;
+        });
+      }
+      if (output) {
+        output = getOutputPath(output);
         const loading = showLoading({
           lock: true,
           text: this.$t("editImage.saving"),
         });
-        await applyEditor(this.imgInfo, fileOut, this).catch((err) => {
+        await applyEditor(this.imgInfo, output, this).catch((err) => {
           showError(err);
           console.warn(err);
         });
         loading.close();
+        img.edited = true;
+        // load next image
+        if (this.showImgList && img.index < imgList.length - 1) {
+          this.loadImage(imgList[img.index + 1]);
+        }
         // reload image if input file changed
-        if (comparePaths(fileOut, input)) this.loadImage(fileOut);
-      });
+        else if (comparePaths(output, img.path)) {
+          this.loadImage(img);
+        }
+      }
     },
   },
 
   async created() {
-    handleDropImages(([image]) => {
-      if (image) this.loadImage(image.path);
-    });
-    // this.loadImage("C:\\Users\\ssnangua\\Downloads\\input.jpg");
+    // 拖放文件
+    handleDropImages((images) => {
+      this.setImgList(images.map((item) => item.path));
+    }, true);
 
+    // 设置变更
     [
       "outerDarkness",
       "background",
@@ -791,24 +936,35 @@ export default {
       this.$watch(key, () => this.updateCropper(key));
     });
 
+    // 多语言
     this.$i18n.locale = getSearches().locale;
     this.updateTitle();
 
-    window.addEventListener("resize", () => {
-      this.cropper?.cropper.initContainer();
-    });
-
-    const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    // 快捷键
+    const arrowCodes = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+    const zoomKeys = {
+      0: "zoomFit",
+      1: "zoom1",
+      "-": "zoomOut",
+      "=": "zoomIn",
+    };
     const body = document.body;
     window.addEventListener("keydown", (e) => {
       const isCtrl = e.ctrlKey || e.metaKey;
+      const key = e.key.toUpperCase();
       if (e.code === "Space" && !this.moveMode) {
         this.moveMode = true;
-      } else if (isCtrl && e.code === "KeyS") {
+      } else if (isCtrl && key === "S" && this.img) {
         this.onSave();
+      } else if (isCtrl && key === "A" && this.cropperReady) {
+        this.cropSizesMenuCallback({ value: 1 });
+      } else if (isCtrl && key === "D" && this.cropperReady) {
+        this.clearCropBox();
+      } else if (isCtrl && zoomKeys[key] && this.cropperReady) {
+        this.onZoom(zoomKeys[key]);
       } else if (
         this.cropped &&
-        arrowKeys.indexOf(e.code) !== -1 &&
+        arrowCodes.indexOf(e.code) !== -1 &&
         e.target === body
       ) {
         const canvas = this.cropper.getCanvasData();
@@ -826,14 +982,10 @@ export default {
             crop.top = isCtrl ? maxTop : Math.min(crop.top + step, maxTop);
             break;
           case "ArrowLeft":
-            crop.left = isCtrl
-              ? minLeft
-              : Math.max(crop.left - step, minLeft);
+            crop.left = isCtrl ? minLeft : Math.max(crop.left - step, minLeft);
             break;
           case "ArrowRight":
-            crop.left = isCtrl
-              ? maxLeft
-              : Math.min(crop.left + step, maxLeft);
+            crop.left = isCtrl ? maxLeft : Math.min(crop.left + step, maxLeft);
             break;
         }
         this.cropper.cropper.action = "shortcut";
@@ -847,6 +999,12 @@ export default {
       }
     });
 
+    // 窗口大小变更
+    window.addEventListener("resize", () => {
+      this.onResize();
+    });
+
+    // 禁用右键菜单
     window.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       return false;

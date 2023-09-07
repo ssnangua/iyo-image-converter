@@ -1,5 +1,6 @@
 <template>
   <vxe-table
+    ref="table"
     :data="tasks"
     :empty-text="$t('tasks.emptyText')"
     class="tasks"
@@ -15,6 +16,8 @@
     @cell-click="onTableRowClick"
     :menu-config="{}"
     @cell-menu="onTableRowContextmenu"
+    :sort-config="{ trigger: 'cell' }"
+    @sort-change="onSortChange()"
   >
     <vxe-column
       v-if="setting.general.showTaskIndex"
@@ -29,12 +32,16 @@
       <template #default="{ row }">
         <el-image
           :src="row.outputUrl || row.url"
+          :preview-src-list="[row.outputUrl || row.url]"
+          :preview-teleported="true"
+          :hide-on-click-modal="true"
           fit="contain"
           class="preview"
+          @click.stop
         />
       </template>
     </vxe-column>
-    <vxe-column :title="$t('tasks.input')">
+    <vxe-column :title="$t('tasks.input')" field="input" sortable>
       <template #default="{ row }">
         <div>
           <span :title="row.input" class="input">{{ row.filename }}</span>
@@ -108,7 +115,6 @@
             <el-button
               size="small"
               key="output-setting"
-              :disabled="processing || row.state !== 'waiting'"
               :title="$t('tasks.outputSetting')"
               @click.stop="$emit('output-setting', [row])"
             >
@@ -118,7 +124,14 @@
         </div>
       </template>
     </vxe-column>
-    <vxe-column :title="$t('tasks.state')" prop="state" width="160">
+    <vxe-column
+      field="state"
+      :title="$t('tasks.state')"
+      prop="state"
+      width="160"
+      sortable
+      :sort-by="sortByState"
+    >
       <template #default="{ row }">
         <div class="state" :class="row.state">
           <el-icon v-if="row.state === 'processing'" class="is-loading">
@@ -159,10 +172,11 @@
             <el-button
               size="small"
               key="remove-task"
-              :icon="DocumentRemove"
               :disabled="processing"
               :title="$t('tasks.removeTask')"
               @click.stop="$emit('remove-task', [row])"
+            >
+              <i class="iconfont icon-f-delete" style="font-size: 9px"></i
             ></el-button>
           </span>
         </div>
@@ -176,7 +190,6 @@ import { shallowRef } from "vue";
 import {
   InfoFilled,
   FolderOpened,
-  DocumentRemove,
   RefreshLeft,
   QuestionFilled,
   Loading,
@@ -188,8 +201,17 @@ import fs from "fs-extra";
 import { humanFileSize } from "@/util/util";
 import { getImageInfo } from "@/util/converter";
 
+let sortedTasks = [];
 let lastSelectIndex = -1;
 let selectedCount = 0;
+
+const stateMap = {
+  waiting: 0,
+  processing: 1,
+  completed: 2,
+  ignored: 3,
+  failed: 4,
+};
 
 export default {
   name: "MainTasks",
@@ -203,9 +225,11 @@ export default {
     tasks: {
       immediate: true,
       handler(tasks) {
+        this.onSortChange(tasks);
         this.selectMap = { ...new Array(tasks.length).fill(false) };
         lastSelectIndex = -1;
         selectedCount = 0;
+        this.$emit("selected-changed", 0);
       },
     },
   },
@@ -213,7 +237,6 @@ export default {
     return {
       InfoFilled: shallowRef(InfoFilled),
       FolderOpened: shallowRef(FolderOpened),
-      DocumentRemove: shallowRef(DocumentRemove),
       RefreshLeft: shallowRef(RefreshLeft),
       QuestionFilled: shallowRef(QuestionFilled),
       tableRowClassName: ({ row }) => {
@@ -233,6 +256,18 @@ export default {
         return `${humanFileSize(diff, 2)} (${percentage}%)`;
       }
       return "";
+    },
+
+    sortByState({ row }) {
+      return stateMap[row.state];
+    },
+    getTableData() {
+      const table = this.$refs.table;
+      return table ? table.getTableData().visibleData : this.tasks;
+    },
+    onSortChange(tasks) {
+      sortedTasks = tasks || this.getTableData();
+      sortedTasks.forEach((row, index) => (row.index = index));
     },
 
     onTableRowClick({ row, $event }) {
@@ -292,11 +327,11 @@ export default {
 
     getTaskContextmenuEnabled(task) {
       const processing = this.processing;
-      const waiting = task.state === "waiting";
+      // const waiting = task.state === "waiting";
       const completed = task.state === "completed";
       const failed = task.state === "failed";
       return {
-        outputSetting: !processing && waiting,
+        // outputSetting: !processing && waiting,
         viewOutputFile: completed,
         viewOutputFileInfo: completed,
         openOutputFolder: completed,
@@ -384,16 +419,11 @@ export default {
     getSelectedTasks() {
       return Object.entries(this.selectMap)
         .filter((index_selected) => index_selected[1])
-        .map(([index]) => this.tasks[index]);
+        .map(([index]) => sortedTasks[index]);
     },
 
     resetTasks(tasks) {
-      tasks.forEach((task) => {
-        task.output = "";
-        task.error = "";
-        task.state = "waiting";
-      });
-      this.$emit("tasks-state-changed");
+      this.$emit("tasks-state-changed", tasks);
     },
 
     viewFile(filePath) {
@@ -406,7 +436,7 @@ export default {
 
     openFolder(filePath) {
       if (fs.existsSync(filePath)) {
-        nw.Shell.openItem(filePath);
+        nw.Shell.showItemInFolder(filePath);
       } else {
         alert(this.$t("message.notExist", { path: filePath }));
       }
@@ -464,7 +494,10 @@ export default {
   },
 
   created() {
-    window.addEventListener("click", () => {
+    window.addEventListener("click", (e) => {
+      if (!e.target.parentNode || e.target.closest(".el-image-viewer__wrapper"))
+        return;
+
       this.$nextTick(() => {
         if (selectedCount > 0) {
           this.unselectAll();
@@ -516,7 +549,11 @@ export default {
   display: inline-flex;
   flex-flow: column;
   align-items: center;
+  justify-content: center;
   width: 100%;
+}
+.tasks .vxe-header--row .vxe-cell {
+  flex-flow: row;
 }
 
 .preview {

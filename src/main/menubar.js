@@ -52,6 +52,12 @@ const items = [
         icon: isMac ? "" : "editimage",
         cmd: "editImage",
       },
+
+      {
+        labelKey: "joinSplitTool.title",
+        icon: isMac ? "" : "paging",
+        cmd: "joinSplitTool",
+      },
       {
         labelKey: "filterTool.title",
         icon: isMac ? "" : "filter",

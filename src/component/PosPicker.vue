@@ -4,12 +4,19 @@
       v-for="pos in options"
       :key="pos"
       class="pos"
-      :class="[pos, modelValue === pos ? 'selected' : '']"
+      :class="[
+        pos,
+        modelValue === pos ? 'selected' : '',
+        pos === 'random' || pos === 'repeat' ? 'with-label' : '',
+      ]"
       @click="
-        this.$emit('update:modelValue', pos);
-        this.$emit('change', pos);
+        $emit('update:modelValue', pos);
+        $emit('change', pos);
       "
-    ></div>
+    >
+      <span v-if="pos === 'random'">{{ $t("posPicker.random") }}</span>
+      <span v-else-if="pos === 'repeat'">{{ $t("posPicker.repeat") }}</span>
+    </div>
   </div>
 </template>
 
@@ -20,17 +27,25 @@ export default {
   emits: ["update:modelValue", "change"],
   data() {
     return {
-      options: ["top-left", "top-right", "bottom-left", "bottom-right"],
+      options: [
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+        "center",
+        "random",
+        "repeat",
+      ],
     };
   },
 };
 </script>
 
-<style>
+<style scoped>
 .pos-picker {
   position: relative;
   width: 150px;
-  height: 80px;
+  height: 100px;
   background-color: #f0f2f5;
   border: 1.5px solid #dcdfe6;
 }
@@ -39,6 +54,7 @@ export default {
   width: 50px;
   height: 20px;
   /* background-color: #ebedf0; */
+  background-color: #f0f2f5;
   border: 1.5px dashed #dcdfe6;
   cursor: pointer;
   transition: background-color 0.3s, border-color 0.3s;
@@ -67,6 +83,27 @@ export default {
 .pos.bottom-right {
   bottom: 5px;
   right: 5px;
+}
+.pos.center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.pos.with-label {
+  width: initial;
+  min-width: 50px;
+  text-align: center;
+  line-height: 20px;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+.pos.repeat {
+  top: 0;
+  left: 180px;
+}
+.pos.random {
+  top: 30px;
+  left: 180px;
 }
 .disabled .pos.selected {
   opacity: 0.2;

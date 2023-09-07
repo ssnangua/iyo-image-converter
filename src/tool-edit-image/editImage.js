@@ -1,16 +1,5 @@
-import { createApp } from "vue";
-// element-ui
-import ElementPlus from "element-plus";
-import "element-plus/dist/index.css";
-// custom iconfont
-import "@/assets/iconfont/iconfont.css";
-// i18n
-import i18n from "@/i18n";
-// App
+import createApp from "@/createApp";
 import EditImage from "./EditImage.vue";
 import "./editImage.css";
 
-const app = createApp(EditImage);
-app.use(i18n);
-app.use(ElementPlus);
-app.mount("#app");
+createApp(EditImage);

@@ -18,6 +18,10 @@
 
 <img src="en_crop-rotate.jpg" width="600" />
 
+## Join & Split
+
+<img src="en_join-split.jpg" width="600" />
+
 ## Filter Tool
 
 <img src="en_filter-tool.jpg" width="600" />

@@ -1,4 +1,4 @@
-# iYo Image Converter | 哎哟图片转换器
+# iYo Image Converter | 哎哟图片转换器 1.4.0
 
 A free native image converter | 一个免费的本地图片转换工具
 
@@ -10,19 +10,29 @@ Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/).
 
 ## Features
 
+- Support image formats: `.png`,`.jpg`,`.jpeg`,`.webp`,`.gif`,`.tif`,`.tiff`,`.avif`,`.heif`,`.bmp`,`.ico`,`.svg`, animated GIF/WebP/APNG
 - Convert / Tiny image
 - Resize / Rotate image
 - Add watermark
-- Supported image formats: `.png`,`.jpg`,`.jpeg`,`.webp`,`.gif`,`.tif`,`.tiff`,`.avif`,`.heif`,`.bmp`,`.ico`,`.svg`, animated GIF/WebP/APNG
-- Edit Image
+  - Support text/image watermark
+  - Support fixed/random position or repeat
+  - Support animated image
+- Crop & Rotate Tool
   - Crop image
   - Rotate image
-  - Supportted animated image
+  - Support animated image
+  - Multi-picture editing
+- Join & Split Tool
+  - Join multiple pictures into one picture (horizontal or vertical)
+  - Or (and) split a picture into multiple pictures (horizontal or vertical, average split or fixed size or manually mark the split positions)
+  - Support batch processing
 - Filter Tool
-  - Supportted animated image
-  - Supportted custom filters
+  - Support animated image
+  - Support batch processing
+  - Support custom filters
 - Anime Tool
   - Create animated image
+  - Make animated image faster/slower or reverse
   - Add text
   - Extract frames
 - ICO Tool

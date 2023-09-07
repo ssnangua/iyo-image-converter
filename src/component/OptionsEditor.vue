@@ -10,11 +10,17 @@
           >{{ $t(`${config.type}.${item.key}`) }}</el-divider
         >
 
-        <!-- unlock -->
+        <!-- hide -->
+        <div
+          v-else-if="item.hideWhen && item.hideWhen(value)"
+          :key="item.key + '-hide'"
+        ></div>
+
+        <!-- normal -->
         <el-form-item
           v-else-if="!item.lockWhen || !item.lockWhen(value)"
           :label="$t(`${config.type}.${item.key}`)"
-          :key="item.key + '-unlock'"
+          :key="item.key + '-normal'"
         >
           <div style="width: 100%">
             <!-- editor -->
@@ -41,6 +47,10 @@
             <PosPicker
               v-else-if="item.type === 'pos'"
               v-model="value[item.key]"
+            />
+            <StyledText
+              v-else-if="item.type === 'styled-text'"
+              :model-value="value[item.key]"
             />
             <el-select
               v-else-if="item.type === 'select'"
@@ -147,6 +157,10 @@
               v-else-if="item.type === 'pos'"
               :model-value="item.lockValue || value[item.key]"
             />
+            <StyledText
+              v-else-if="item.type === 'styled-text'"
+              :model-value="item.lockValue || value[item.key]"
+            />
             <el-select
               v-else-if="item.type === 'select'"
               :model-value="item.lockValue || value[item.key]"
@@ -223,10 +237,11 @@ import FilePicker from "@/component/FilePicker.vue";
 import FitPicker from "@/component/FitPicker.vue";
 import ColorPicker from "@/component/ColorPicker.vue";
 import PosPicker from "@/component/PosPicker.vue";
+import StyledText from "@/component/StyledText.vue";
 
 export default {
   name: "OptionsEditor",
-  components: { FilePicker, FitPicker, ColorPicker, PosPicker },
+  components: { FilePicker, FitPicker, ColorPicker, PosPicker, StyledText },
   props: {
     config: Object,
     setting: Object,

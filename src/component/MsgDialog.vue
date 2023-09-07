@@ -1,5 +1,5 @@
 <template>
-  <el-dialog custom-class="msg-dialog">
+  <el-dialog class="msg-dialog">
     <div v-if="message">
       <div style="line-height: 36px">
         <el-icon
