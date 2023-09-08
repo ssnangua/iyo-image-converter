@@ -16,15 +16,16 @@ Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/).
 - Add watermark
   - Support text/image watermark
   - Support fixed/random position or repeat
+  - Support watermark opacity and rotate
   - Support animated image
 - Crop & Rotate Tool
   - Crop image
   - Rotate image
   - Support animated image
-  - Multi-picture editing
+  - Multi-images editing
 - Join & Split Tool
-  - Join multiple pictures into one picture (horizontal or vertical)
-  - Or (and) split a picture into multiple pictures (horizontal or vertical, average split or fixed size or manually mark the split positions)
+  - Join multiple images into one image (horizontal or vertical)
+  - Or (and) split a image into multiple images (horizontal or vertical, average split or fixed size or manually mark the split positions)
   - Support batch processing
 - Filter Tool
   - Support animated image
