@@ -6,7 +6,7 @@ A free native image converter | 一个免费的本地图片转换工具
 
 基于 [sharp](https://sharp.pixelplumbing.com/) 和 [NW.js](https://nwjs.io/)。
 
-[下载](/ssnangua/iyo-image-converter/releases) | [截图](screenshots/zh.md) | [English Document](README.md) | 中文文档
+[下载](https://github.com/ssnangua/iyo-image-converter/releases) | [截图](screenshots/zh.md) | [English Document](README.md) | 中文文档
 
 ## 特性
 
