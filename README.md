@@ -4,7 +4,7 @@ A free native image converter | 一个免费的本地图片转换工具
 
 <img src="screenshots/en_convert.jpg" width="600" />
 
-Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/).
+Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/), support Windows and Mac.
 
 [Download](https://github.com/ssnangua/iyo-image-converter/releases) | [Screenshots](screenshots/en.md) | English Document | [中文文档](README_zh.md)
 

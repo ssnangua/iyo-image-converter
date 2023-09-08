@@ -4,7 +4,7 @@ A free native image converter | 一个免费的本地图片转换工具
 
 <img src="screenshots/zh_convert.jpg" width="600" />
 
-基于 [sharp](https://sharp.pixelplumbing.com/) 和 [NW.js](https://nwjs.io/)。
+基于 [sharp](https://sharp.pixelplumbing.com/) 和 [NW.js](https://nwjs.io/)，支持 Windows 和 Mac。
 
 [下载](https://github.com/ssnangua/iyo-image-converter/releases) ([百度网盘](https://pan.baidu.com/s/1XEFhLGZqRHW9s8pIFULNZQ?pwd=nrlc)) | [截图](screenshots/zh.md) | [English Document](README.md) | 中文文档
 
