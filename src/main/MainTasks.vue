@@ -32,7 +32,11 @@
       <template #default="{ row }">
         <el-image
           :src="row.outputUrl || row.url"
-          :preview-src-list="[row.outputUrl || row.url]"
+          :preview-src-list="
+            row.outputUrl ? [row.url, row.outputUrl] : [row.url]
+          "
+          :initial-index="row.outputUrl ? 1 : 0"
+          :infinite="false"
           :preview-teleported="true"
           :hide-on-click-modal="true"
           fit="contain"

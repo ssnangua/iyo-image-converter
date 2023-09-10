@@ -406,12 +406,13 @@ export default {
           });
           _sizeMap[icon.size] = true;
         }
-        _icons.sort((a, b) => b.size - a.size);
+        _icons.sort((a, b) => a.icon.size - b.icon.size);
         const { extractSizes } = this;
         for (let size of extractSizes) {
           if (!_sizeMap[size]) {
             const { icon, image } =
-              _icons.find(({ icon }) => icon && icon.size > size) || _icons[0];
+              _icons.find(({ icon }) => icon && icon.size > size) ||
+              _icons[_icons.length - 1];
             _icons.push({
               processed: await processIcon(
                 {

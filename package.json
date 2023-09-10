@@ -1,6 +1,6 @@
 {
   "name": "iyo-image-converter",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:web\" \"wait-on http://localhost:8080 && npm run dev:nw\"",

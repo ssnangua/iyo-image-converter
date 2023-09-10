@@ -164,8 +164,10 @@ export async function rotateImage(image, task, angle, background) {
 
 async function setModifier(image, task) {
   const background = task.modifier.background || { r: 0, g: 0, b: 0, alpha: 0 };
+  const animated = task.animated && task.toAnimated;
 
-  const { width: iw, height: ih } = await image.metadata();
+  const { width: iw, height: ih, pageHeight } = await image.metadata();
+  const ph = pageHeight || ih;
 
   // crop
   const {
@@ -180,18 +182,20 @@ async function setModifier(image, task) {
     cropWidth: cw = 0,
     cropHeight: ch = 0,
   } = task.modifier;
+  const isTrim = cropType === "trim";
+  const isCrop = ct || cr || cb || cl || cw || ch;
   if (enableCrop) {
-    if (cropType === "trim") {
+    if (isTrim) {
       // image.trim({
       //   background: trimColor,
       //   threshold: trimThreshold,
       // });
       image.trim(trimThreshold);
-    } else if (ct || cr || cb || cl || cw || ch) {
+    } else if (isCrop) {
       let left = cl;
       let top = ct;
       let width = Math.min(iw - cl - cr, cw || iw - cl - cr);
-      let height = Math.min(ih - ct - cb, ch || ih - ct - cb);
+      let height = Math.min(ph - ct - cb, ch || ph - ct - cb);
       if (width > 0 && height > 0) {
         image.extract({ left, top, width, height });
       }
@@ -201,37 +205,38 @@ async function setModifier(image, task) {
   // rotate
   const { enableRotate, angle, flop, flip } = task.modifier;
   if (enableRotate) {
+    // apply crop
+    if (isTrim || isCrop) {
+      image = sharp(await image.toBuffer(), { animated });
+    }
     if (angle !== 0) image = await rotateImage(image, task, angle, background);
     if (flop) image.flop();
     if (flip) image.flip();
   }
 
   // resize
-  const { enableResize, resizeType, width, height, fit, kernel } =
-    task.modifier;
+  const { enableResize, width, height, fit, kernel } = task.modifier;
+  const isPixels = task.modifier.resizeType === "pixels";
   if (enableResize && width > 0 && height > 0) {
     // apply rotate
     if (enableRotate && (angle !== 0 || flop || flip)) {
-      image = sharp(await image.toBuffer(), {
-        animated: task.animated && task.toAnimated,
-      });
+      image = sharp(await image.toBuffer(), { animated });
     }
 
-    const w = resizeType === "pixels" ? width : Math.round((iw * width) / 100);
-    const h =
-      resizeType === "pixels" ? height : Math.round((ih * height) / 100);
     if (fit === "none") {
-      if (w < iw || h < ih) {
+      const w = isPixels ? width : Math.round((iw * width) / 100);
+      const h = isPixels ? height : Math.round((ph * height) / 100);
+      if (w < iw || h < ph) {
         image.extract({
           left: Math.max(0, Math.ceil((iw - w) / 2)),
-          top: Math.max(0, Math.ceil((ih - h) / 2)),
+          top: Math.max(0, Math.ceil((ph - h) / 2)),
           width: Math.min(iw, w),
-          height: Math.min(ih, h),
+          height: Math.min(ph, h),
         });
       }
-      if (w > iw || h > ih) {
+      if (w > iw || h > ph) {
         const ew = Math.max(0, Math.ceil((w - iw) / 2));
-        const eh = Math.max(0, Math.ceil((h - ih) / 2));
+        const eh = Math.max(0, Math.ceil((h - ph) / 2));
         image.extend({
           top: eh,
           left: ew,
@@ -243,8 +248,8 @@ async function setModifier(image, task) {
     } else {
       image.resize({
         fit,
-        width: w,
-        height: h,
+        width: isPixels ? width : Math.round((iw * width) / 100),
+        height: isPixels ? height : Math.round((ih * height) / 100),
         kernel,
         background,
       });
