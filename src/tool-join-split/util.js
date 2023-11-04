@@ -2,11 +2,12 @@ import fs from "fs-extra";
 import path from "path";
 import sharp from "sharp";
 import { getSharp } from "@/util/converter";
-import { getOutputPath } from "@/util/util";
+import { comparePaths, getOutputPath } from "@/util/util";
+import { trash } from "@/util/shell";
 
 export async function save(
   groups,
-  { outputFolder, format, quality },
+  { outputFolder, format, quality, afterProcessing },
   onProgress
 ) {
   // console.log(groups, outputFolder);
@@ -16,7 +17,9 @@ export async function save(
     if (group.images.length === 1 && group.split.lines.length === 0) {
       const image = group.images[0];
       const dest = path.join(outputFolder, image.name);
-      await fs.copy(image.path, getOutputPath(dest));
+      if (!comparePaths(dest, image.path)) {
+        await fs.copy(image.path, getOutputPath(dest));
+      }
       onProgress(group.index);
       continue;
     }
@@ -30,6 +33,7 @@ export async function save(
       (format === "JPEG" ? "#FFFFFF" : { r: 0, g: 0, b: 0, alpha: 0 });
     const images = group.images.slice(0);
     if (group.join.reverse) images.reverse();
+    if (!outputFolder) outputFolder = path.dirname(group.images[0].path);
     const joinedName = images
       .map((image) => path.parse(image.path).name)
       .join("_");
@@ -72,12 +76,19 @@ export async function save(
 
     // format
     let ext;
-    if (format === "JPEG") {
-      ext = "jpg";
-      joined.jpeg({ quality });
-    } else {
-      ext = "png";
-      joined.png({ palette: true, quality });
+    switch (format) {
+      case "JPEG":
+        ext = "jpg";
+        joined.jpeg({ quality });
+        break;
+      case "PNG":
+        ext = "png";
+        joined.png({ palette: true, quality });
+        break;
+      case "WebP":
+        ext = "webp";
+        joined.webp({ quality });
+        break;
     }
 
     // split
@@ -110,6 +121,15 @@ export async function save(
     } else {
       const output = path.join(outputFolder, `${joinedName}.${ext}`);
       await joined.toFile(getOutputPath(output));
+    }
+
+    // After processing
+    for (let image of group.images) {
+      if (afterProcessing === "deleteSourceFile") {
+        await fs.remove(image.path);
+      } else if (afterProcessing === "moveSourceFileToTrash") {
+        await trash(image.path);
+      }
     }
 
     onProgress(group.index);

@@ -124,6 +124,7 @@
             @remove-image="onRemoveImage($event)"
             @add-split-line="onAddSplitLine($event)"
             @show-group-detail="setCurGroup(group.index)"
+            @lock-group="group.locked = $event"
             @group-mousedown="onGroupMousedown"
             @contextmenu.stop.prevent="
               onImagesContainerContextmenu($event, group)
@@ -447,6 +448,13 @@
             </el-form-item>
             <el-form-item>
               <div class="btn-form-item">
+                <el-button
+                  :disabled="splitHistoryCount === 0"
+                  @click="onUndoSplit"
+                  style="margin-right: 20px"
+                >
+                  {{ $t("joinSplitTool.undoSplit") }}
+                </el-button>
                 <BadgeButton
                   buttonType="default"
                   :label="$t('joinSplitTool.clearSplitLines')"
@@ -512,7 +520,7 @@
       <div>
         <el-button @click="showSetting = true" style="padding: 0 10px">
           <i class="iconfont icon-setting" style="margin-right: 6px"></i>
-          {{ $t("joinSplitTool.displaySetting") }}
+          {{ $t("joinSplitTool.setting") }}
         </el-button>
       </div>
       <div style="flex: auto; padding: 0 10px">
@@ -535,7 +543,7 @@
           style="width: 100px"
         >
           <el-option
-            v-for="item in ['JPEG', 'PNG']"
+            v-for="item in ['JPEG', 'PNG', 'WebP']"
             :key="item"
             :label="item"
             :value="item"
@@ -581,16 +589,33 @@
     <!-- START: setting -->
     <el-drawer
       v-model="showSetting"
-      :title="$t('joinSplitTool.displaySetting')"
+      :title="$t('joinSplitTool.setting')"
       direction="rtl"
-      :size="250"
+      :size="300"
       modal-class="setting-modal"
     >
       <el-form label-width="auto" @submit.prevent>
+        <el-form-item :label="$t('joinSplitTool.afterProcessing')">
+          <el-select v-model="setting.afterProcessing">
+            <el-option
+              v-for="item in [
+                'none',
+                'deleteSourceFile',
+                'moveSourceFileToTrash',
+              ]"
+              :key="item"
+              :label="$t('joinSplitTool.afterProcessingOptions.' + item)"
+              :value="item"
+            />
+          </el-select>
+        </el-form-item>
+        <el-divider style="margin: 40px 0">{{
+          $t("joinSplitTool.displaySetting")
+        }}</el-divider>
         <el-form-item :label="$t('joinSplitTool.showFilename')">
           <el-select v-model="setting.showFilename">
             <el-option
-              v-for="item in ['always', 'hover', 'never']"
+              v-for="item in ['always', 'hover', 'selected', 'never']"
               :key="item"
               :label="$t('joinSplitTool.' + item)"
               :value="item"
@@ -600,7 +625,7 @@
         <el-form-item :label="$t('joinSplitTool.groupSelectedBorderColor')">
           <ColorPicker
             v-model="setting.groupSelectedBorderColor"
-            :predefine="['#649CfA']"
+            :predefine="['#649CFA']"
           />
         </el-form-item>
         <el-form-item :label="$t('joinSplitTool.imageSelectedBorderColor')">
@@ -659,6 +684,10 @@
         ></span>
       </p>
       <p>
+        <span class="keyboard">Ctrl</span>+<span class="keyboard">Z</span
+        >：<span v-html="$t('joinSplitTool.tips.undoSplit')"></span>
+      </p>
+      <p>
         <i class="iconfont icon-mouse-right"></i>：{{
           $t("joinSplitTool.tips.contextmenu")
         }}
@@ -677,9 +706,10 @@
         ></span>
       </p>
       <p>
-        <i class="iconfont icon-mouse-right"></i> /
-        <span class="keyboard"><i class="iconfont icon-space"></i></span> +
-        <i class="iconfont icon-mouse-left"></i>：{{
+        <i class="iconfont icon-mouse-right"></i> / (<span class="keyboard"
+          ><i class="iconfont icon-space"></i
+        ></span>
+        + <i class="iconfont icon-mouse-left"></i>)：{{
           $t("joinSplitTool.tips.move")
         }}
       </p>
@@ -784,6 +814,8 @@ function autoScroll(deltaY) {
   }, 10);
 }
 
+let splitHistory = [];
+
 export default {
   name: "JoinSplitTool",
   components: {
@@ -807,14 +839,15 @@ export default {
         groupWidth: 300,
         groupHeight: 300,
 
-        showFilename: "hover",
+        afterProcessing: "none",
+        showFilename: "selected",
         joinOrder: true,
 
         splitLineColor: "#FF0000",
         splitOrder: true,
 
         imageSelectedBorderColor: "#67C23A",
-        groupSelectedBorderColor: "#649CfA",
+        groupSelectedBorderColor: "#649CFA",
 
         outputFolder: "",
         format: "JPEG",
@@ -853,6 +886,8 @@ export default {
 
       showSetting: false,
       tipsDialog: false,
+
+      splitHistoryCount: 0,
     };
   },
 
@@ -937,6 +972,8 @@ export default {
       this.lastSelectedImage = null;
       groupsState = [];
       this.groups = [];
+      splitHistory = [];
+      this.splitHistoryCount = 0;
     },
 
     async addImages(images) {
@@ -957,9 +994,9 @@ export default {
         })
       ).catch(() => loading.close());
       const newGroups = this.createGroups(newImages);
-      this.applySplit(newGroups);
       this.groups = this.groups.concat(newGroups);
       this.updateIndex();
+      this.applySplit(this.groups.slice(-newGroups.length));
       loading.close();
     },
 
@@ -981,6 +1018,13 @@ export default {
       return groups;
     },
 
+    insertGroup(index, group) {
+      this.groups.splice(index, 0, group);
+    },
+    removeGroup(index) {
+      this.removeGroupRecord(this.groups[index]);
+      this.groups.splice(index, 1);
+    },
     sortGroups() {
       this.groups.sort((a, b) => a.images[0].index - b.images[0].index);
     },
@@ -1043,7 +1087,7 @@ export default {
                 removeItem(group.images, image);
               });
               this.updateGroup(group);
-              group.split.lines = [];
+              this.clearSplitLines(group);
             }
             images.push(...selectedImages);
           });
@@ -1063,7 +1107,10 @@ export default {
       } else {
         const groups = curGroup ? [curGroup] : this.getSelectedGroups();
         groups.forEach((group) => {
-          if (group.join.direction !== join.direction) group.split.lines = [];
+          if (group.join.direction !== join.direction) {
+            group.split.lines = [];
+            this.removeGroupRecord(group);
+          }
           group.join = { ...join };
           this.updateGroup(group);
         });
@@ -1087,7 +1134,10 @@ export default {
         const lines = new Array(count - 1)
           .fill(0)
           .map((_, index) => Math.round((index + 1) * part));
-        group.split = { ...split, lines };
+        if (group.split.lines.join("_") !== lines.join("_")) {
+          this.pushSplitRecord(group);
+          group.split = { ...split, lines };
+        }
       });
     },
 
@@ -1100,7 +1150,10 @@ export default {
       } else {
         const { split } = this;
         groups.forEach((group) => {
-          if (group.split.direction !== split.direction) group.split.lines = [];
+          if (group.split.direction !== split.direction) {
+            group.split.lines = [];
+            this.removeGroupRecord(group);
+          }
           Object.assign(group.split, split);
         });
       }
@@ -1266,7 +1319,7 @@ export default {
               this.updateIndex();
               break;
             case "clearThisGroupSplitLines":
-              group.split.lines = [];
+              this.clearSplitLines(group);
               break;
             case "joinNextImage":
               this.joinNextImage(group);
@@ -1283,9 +1336,9 @@ export default {
               this.onApplyJoin("groups", "unjoin");
               break;
             case "clearSelectedGroupsSplitLines":
-              this.getSelectedGroups().forEach(
-                (group) => (group.split.lines = [])
-              );
+              this.getSelectedGroups().forEach((group) => {
+                this.clearSplitLines(group);
+              });
               break;
             case "removeSelectedGroups":
               this.removeSelectedGroups();
@@ -1318,7 +1371,7 @@ export default {
       if (next.images.length === 0) {
         removeItem(this.groups, next);
       } else {
-        next.split.lines = [];
+        this.clearSplitLines(next);
         this.updateGroup(group);
       }
       this.updateIndex();
@@ -1347,7 +1400,7 @@ export default {
         if (group.images.length === 0) removeItem(groups, group);
         else {
           this.updateGroup(group);
-          group.split.lines = [];
+          this.clearSplitLines(group);
         }
       });
       this.updateIndex();
@@ -1356,35 +1409,58 @@ export default {
     onRemoveGroup({ group }) {
       const { images, groups } = this;
       groups[group.index].images.forEach((image) => removeItem(images, image));
-      groups.splice(group.index, 1);
+      this.removeGroup(group.index);
       this.updateIndex();
     },
 
     onRemoveImage({ group, imageIndex }) {
-      const { images, groups } = this;
+      const { images } = this;
       removeItem(images, group.images[imageIndex]);
       group.images.splice(imageIndex, 1);
-      group.split.lines = [];
+      this.clearSplitLines(group);
       if (group.images.length === 0) {
-        groups.splice(group.index, 1);
-        this.updateIndex();
+        this.removeGroup(group.index);
       } else {
         this.updateGroup(group);
-        group.split.lines = [];
+        this.clearSplitLines(group);
       }
       this.updateIndex();
     },
 
+    pushSplitRecord(group) {
+      splitHistory.push({ group, lines: [...group.split.lines] });
+      splitHistory = splitHistory.slice(-100);
+      this.splitHistoryCount = splitHistory.length;
+    },
+    removeGroupRecord(group) {
+      splitHistory = splitHistory.filter((record) => record.group !== group);
+      this.splitHistoryCount = splitHistory.length;
+    },
     onAddSplitLine({ group, value, onAdded }) {
       if (this.operation !== "split" || !this.manualSplit) return;
       if (this.curGroup && (this.curGroup.locked || this.isSpace)) return;
+      this.pushSplitRecord(group);
       group.split.lines.push(value);
       group.split.lines.sort((a, b) => a - b);
       onAdded();
     },
+    clearSplitLines(group) {
+      if (group.split.lines.length > 0) {
+        this.pushSplitRecord(group);
+        group.split.lines = [];
+      }
+    },
     onClearSplitLines() {
       const groups = this.curGroup ? [this.curGroup] : this.getSelectedGroups();
-      groups.forEach((group) => (group.split.lines = []));
+      groups.forEach((group) => this.clearSplitLines(group));
+    },
+    onUndoSplit() {
+      const record = splitHistory.pop();
+      if (record && record.group) {
+        record.group.split.lines = record.lines;
+        this.splitHistoryCount = splitHistory.length;
+        this.groups = this.groups.slice(0);
+      }
     },
 
     setCurGroup(index) {
@@ -1657,7 +1733,7 @@ export default {
             const insertIndex = innerIndex + (slot.isInsertBefore ? 0 : 1);
             insertGroup.images.splice(insertIndex, 0, image);
             this.updateGroup(insertGroup);
-            insertGroup.split.lines = [];
+            // this.clearSplitLines(insertGroup);
             // delete image from old position
             const deleteIndex =
               slot.groupIndex !== group.index ||
@@ -1665,10 +1741,12 @@ export default {
                 ? image.innerIndex
                 : image.innerIndex + 1;
             group.images.splice(deleteIndex, 1);
-            if (group.images.length === 0) groups.splice(group.index, 1);
-            else {
+            if (group.images.length === 0) {
+              this.removeGroup(group.index);
+            } else {
               this.updateGroup(group);
-              group.split.lines = [];
+              this.clearSplitLines(group);
+              this.removeGroupRecord(group);
             }
             this.updateIndex();
           }
@@ -1677,28 +1755,29 @@ export default {
           const insertIndex = slot.groupIndex + (slot.isInsertBefore ? 0 : 1);
           const newGroup = { ...clone(group), images: [image] };
           this.updateGroup(newGroup);
-          newGroup.split.lines = [];
-          groups.splice(insertIndex, 0, newGroup);
+          this.clearSplitLines(newGroup);
+          this.insertGroup(insertIndex, newGroup);
           // delete image from old position
           group.images.splice(image.innerIndex, 1);
           if (group.images.length === 0) {
             const deleteIndex =
               slot.groupIndex > group.index ? group.index : group.index + 1;
-            groups.splice(deleteIndex, 1);
+            this.removeGroup(deleteIndex);
           } else {
             this.updateGroup(group);
-            group.split.lines = [];
+            this.clearSplitLines(group);
+            this.removeGroupRecord(group);
           }
           this.updateIndex();
         }
       } else if (group && slot.groupIndex !== group.index) {
         // insert group to new position
         const insertIndex = slot.groupIndex + (slot.isInsertBefore ? 0 : 1);
-        groups.splice(insertIndex, 0, group);
+        this.insertGroup(insertIndex, group);
         // delete group from old position
         const deleteIndex =
           slot.groupIndex > group.index ? group.index : group.index + 1;
-        groups.splice(deleteIndex, 1);
+        this.removeGroup(deleteIndex);
         this.updateIndex();
       }
       this.dragInfo = { ...defDragInfo };
@@ -1706,38 +1785,38 @@ export default {
     // END: drag
 
     async onSave(isSaveAll) {
-      if (!this.setting.outputFolder) {
-        await showOpenDialog({
-          nwdirectory: true,
-          nwdirectorydesc: this.$t("joinSplitTool.chooseOutputFolder"),
-        }).then(([dirPath]) => {
-          this.setting.outputFolder = dirPath;
-        });
-      }
-      if (this.setting.outputFolder) {
-        let groups;
-        if (isSaveAll) groups = this.groups;
-        else if (this.curGroup) groups = [this.curGroup];
-        else groups = this.getSelectedGroups(true);
+      // if (!this.setting.outputFolder) {
+      //   await showOpenDialog({
+      //     nwdirectory: true,
+      //     nwdirectorydesc: this.$t("joinSplitTool.chooseOutputFolder"),
+      //   }).then(([dirPath]) => {
+      //     this.setting.outputFolder = dirPath;
+      //   });
+      // }
+      // if (this.setting.outputFolder) {
+      let groups;
+      if (isSaveAll) groups = this.groups;
+      else if (this.curGroup) groups = [this.curGroup];
+      else groups = this.getSelectedGroups(true);
 
-        const total = groups.length;
-        const loading = showLoading({
-          lock: true,
-          text: `0/${total}`,
-        });
-        save(groups, this.setting, (index) => {
-          if (index < total - 1) loading.setText(`${index + 1}/${total}`);
+      const total = groups.length;
+      const loading = showLoading({
+        lock: true,
+        text: `0/${total}`,
+      });
+      save(groups, this.setting, (index) => {
+        if (index < total - 1) loading.setText(`${index + 1}/${total}`);
+      })
+        .then(() => {
+          loading.close();
+          showSuccess(this.$t("joinSplitTool.completed"));
         })
-          .then(() => {
-            loading.close();
-            showSuccess(this.$t("joinSplitTool.completed"));
-          })
-          .catch((err) => {
-            loading.close();
-            showError(this.$t("joinSplitTool.failed"), err);
-            console.error(err);
-          });
-      }
+        .catch((err) => {
+          loading.close();
+          showError(this.$t("joinSplitTool.failed"), err);
+          console.error(err);
+        });
+      // }
     },
   },
 
@@ -1750,7 +1829,9 @@ export default {
 
     window.addEventListener("keydown", (e) => {
       if (e.repeat) return;
-      if (e.key === "Alt") this.isAlt = true;
+      if (e.key === "Escape" && this.curGroup) this.onCloseGroupDetail();
+      else if (isCtrlKey(e) && e.key === "z") this.onUndoSplit();
+      else if (e.key === "Alt") this.isAlt = true;
       else if (isCtrlKey(e) && e.key === "o") this.onOpen();
       else if (e.key === "a") {
         if (e.altKey) this.setAllSelected(this.images, true);

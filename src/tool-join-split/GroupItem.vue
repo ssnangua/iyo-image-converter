@@ -117,6 +117,9 @@
 
     <div class="locked-badge" v-if="group.locked">
       <i class="iconfont icon-lock"></i>
+      <span class="control-btn unlock-btn" @click="$emit('lock-group', false)">
+        <i class="iconfont icon-unlock"></i>
+      </span>
     </div>
 
     <OrderBadge
@@ -137,6 +140,9 @@
     <div class="group-toolbar">
       <span class="control-btn" @click="$emit('show-group-detail')">
         <i class="iconfont icon-detail"></i>
+      </span>
+      <span class="control-btn" @click="$emit('lock-group', true)">
+        <i class="iconfont icon-lock"></i>
       </span>
       <span
         class="control-btn"
@@ -328,7 +334,10 @@ export default {
   pointer-events: none;
 }
 .always-show-filename .img-name,
-.hover-show-filename .group-box:hover .img-name {
+.hover-show-filename .group-box:hover .img-name,
+.selected-show-filename .group-box:hover .img-name,
+.selected-show-filename .group-selected .img-name,
+.selected-show-filename .img-selected .img-name {
   display: block;
 }
 
@@ -341,6 +350,15 @@ export default {
   position: absolute;
   top: 0;
   right: 0;
+}
+.locked-badge .unlock-btn {
+  display: none;
+}
+.locked-badge:hover .icon-lock {
+  display: none;
+}
+.locked-badge:hover .unlock-btn {
+  display: inline-block;
 }
 
 .img-toolbar {
@@ -501,7 +519,8 @@ export default {
   display: none !important;
 }
 .always-show-filename .dragging .img-name,
-.hover-show-filename .dragging .img-name {
+.hover-show-filename .dragging .img-name,
+.selected-show-filename .dragging .img-name {
   display: block;
 }
 </style>
