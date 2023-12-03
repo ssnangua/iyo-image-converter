@@ -20,6 +20,14 @@ export async function save(
       if (!comparePaths(dest, image.path)) {
         await fs.copy(image.path, getOutputPath(dest));
       }
+
+      // After processing
+      if (afterProcessing === "deleteSourceFile") {
+        await fs.remove(image.path);
+      } else if (afterProcessing === "moveSourceFileToTrash") {
+        await trash(image.path);
+      }
+
       onProgress(group.index);
       continue;
     }

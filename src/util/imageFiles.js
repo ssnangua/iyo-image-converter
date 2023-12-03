@@ -10,9 +10,6 @@ export const openAcceptRule =
 export const saveAcceptRule =
   /.(jpg|jpeg|png|webp|gif|tif|tiff|avif|heif|bmp|ico)$/i;
 
-function compareFiles(a, b) {
-  return a.path > b.path ? 1 : -1;
-}
 export async function getImages(files, isReadFolders, images = [], rootPath) {
   for (let i = 0, length = files.length; i < length; i++) {
     const file = files[i];
@@ -38,7 +35,9 @@ export async function getImages(files, isReadFolders, images = [], rootPath) {
       }
     }
   }
-  images.sort(compareFiles);
+  images.sort((a, b) =>
+    a.path.localeCompare(b.path, undefined, { numeric: true })
+  );
   return images;
 }
 

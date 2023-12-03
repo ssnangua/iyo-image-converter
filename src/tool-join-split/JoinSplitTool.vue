@@ -149,9 +149,7 @@
                   isSpace && curGroupState.zoom > curGroupState.fitZoom,
                 moving: curGroupState.moving,
               }"
-              @mousewheel="
-                setZoom(curGroupState.zoom * ($event.deltaY < 0 ? 1.1 : 0.9))
-              "
+              @mousewheel="onMousewheel"
               @mousedown="onStartMove"
             >
               <GroupItem
@@ -325,6 +323,31 @@
                   :disabled="!!curGroup || selectedImagesCount === 0"
                   @click="onApplyJoin('images', 'joinAll')"
                 />
+              </div>
+            </el-form-item>
+
+            <el-form-item>
+              <div class="btn-form-item">
+                <BadgeButton
+                  :label="$t('joinSplitTool.autoJoin')"
+                  :count="selectedGroupsCount"
+                  :disabled="
+                    join.direction === 'horizontal' ||
+                    !!curGroup ||
+                    selectedGroupsCount === 0
+                  "
+                  @click="onAutoJoin"
+                />
+                <el-tooltip placement="top">
+                  <template #content>
+                    <div v-html="$t('joinSplitTool.autoJoin_desc')"></div>
+                  </template>
+                  <el-link
+                    :icon="QuestionFilled"
+                    :underline="false"
+                    style="margin-left: 10px"
+                  ></el-link>
+                </el-tooltip>
               </div>
             </el-form-item>
 
@@ -609,6 +632,28 @@
             />
           </el-select>
         </el-form-item>
+
+        <el-divider style="margin: 40px 0">{{
+          $t("joinSplitTool.autoJoin")
+        }}</el-divider>
+        <el-form-item :label="$t('joinSplitTool.autoJoinThreshold')">
+          <el-input-number
+            v-model="setting.autoJoin.threshold"
+            controls-position="right"
+            :min="1"
+            :max="255"
+            :step="1"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item :label="$t('joinSplitTool.autoJoinMinHeight')">
+          <el-input-number
+            v-model="setting.autoJoin.minHeight"
+            controls-position="right"
+            :min="0"
+            :step="1"
+          ></el-input-number>
+        </el-form-item>
+
         <el-divider style="margin: 40px 0">{{
           $t("joinSplitTool.displaySetting")
         }}</el-divider>
@@ -695,6 +740,10 @@
       <p>
         <i class="iconfont icon-lock"></i>：{{ $t("joinSplitTool.tips.lock") }}
       </p>
+      <p>
+        <span class="keyboard">Ctrl</span>+<span class="keyboard">G</span
+        >：<span v-html="$t('joinSplitTool.joinSelectedGroups')"></span>
+      </p>
 
       <el-divider content-position="left">
         <i class="iconfont icon-detail"></i>
@@ -713,6 +762,18 @@
           $t("joinSplitTool.tips.move")
         }}
       </p>
+      <p>
+        <span class="keyboard">PageUp</span> /
+        <span class="keyboard">←</span>：<span
+          v-html="$t('joinSplitTool.tips.prevGroup')"
+        ></span>
+      </p>
+      <p>
+        <span class="keyboard">PageDown</span> /
+        <span class="keyboard">→</span>：<span
+          v-html="$t('joinSplitTool.tips.nextGroup')"
+        ></span>
+      </p>
     </el-dialog>
     <!-- END: tips -->
   </el-container>
@@ -723,9 +784,11 @@ import path from "path";
 import url from "url";
 import sharp from "sharp";
 import clone from "clone";
+import { shallowRef } from "vue";
+import { QuestionFilled } from "@element-plus/icons-vue";
 import { showOpenDialog } from "nwjs-dialog";
 import { handleDropImages, openAccept } from "@/util/imageFiles";
-import { getCurrentScreen } from "@/util/util";
+import { deepExtend, getCurrentScreen } from "@/util/util";
 import { showLoading, showError, showSuccess } from "@/util/message";
 import ColorPicker from "@/component/ColorPicker.vue";
 import ZoomTool from "@/component/ZoomTool.vue";
@@ -805,6 +868,13 @@ function updateGroupsState() {
   );
 }
 
+function comparePixels(a, b, threshold) {
+  for (let i = 0; i < a.length; i++) {
+    if (Math.abs(a[i] - b[i]) > threshold) return false;
+  }
+  return true;
+}
+
 let imagesWrapper;
 let scrollTimer = -1;
 function autoScroll(deltaY) {
@@ -829,30 +899,40 @@ export default {
   },
   data() {
     return {
+      QuestionFilled: shallowRef(QuestionFilled),
+
       isAlt: false,
       isSpace: false,
 
       operation: "join",
       manualSplit: false,
 
-      setting: {
-        groupWidth: 300,
-        groupHeight: 300,
+      setting: deepExtend(
+        {
+          groupWidth: 300,
+          groupHeight: 300,
 
-        afterProcessing: "none",
-        showFilename: "selected",
-        joinOrder: true,
+          afterProcessing: "none",
+          showFilename: "selected",
+          joinOrder: true,
 
-        splitLineColor: "#FF0000",
-        splitOrder: true,
+          splitLineColor: "#FF0000",
+          splitOrder: true,
 
-        imageSelectedBorderColor: "#67C23A",
-        groupSelectedBorderColor: "#649CFA",
+          imageSelectedBorderColor: "#67C23A",
+          groupSelectedBorderColor: "#649CFA",
 
-        outputFolder: "",
-        format: "JPEG",
-        quality: 80,
-      },
+          outputFolder: "",
+          format: "JPEG",
+          quality: 80,
+
+          autoJoin: {
+            threshold: 4,
+            minHeight: 200,
+          },
+        },
+        JSON.parse(localStorage.tool_join_split_setting || "{}")
+      ),
 
       join: {
         direction: "horizontal",
@@ -889,6 +969,18 @@ export default {
 
       splitHistoryCount: 0,
     };
+  },
+
+  watch: {
+    setting: {
+      deep: true,
+      handler() {
+        localStorage.tool_join_split_setting = JSON.stringify(this.setting);
+      },
+    },
+    "join.direction"() {
+      this.split.direction = this.join.direction;
+    },
   },
 
   computed: {
@@ -1116,6 +1208,65 @@ export default {
         });
         if (curGroup) this.onResize();
       }
+    },
+
+    // 智能拼接
+    async onAutoJoin() {
+      if (this.curGroup) return;
+
+      const text = this.$t("joinSplitTool.processing");
+      const loading = showLoading({
+        lock: true,
+        text,
+      });
+
+      const { groups } = this;
+      const images = [];
+      this.getSelectedGroups().forEach((group) => {
+        images.push(...group.images);
+        removeItem(groups, group);
+      });
+      let group = this.createGroups([images[0]], 1)[0];
+      for (let i = 1; i < images.length; i++) {
+        loading.setText(`${text} ${i + 1}/${images.length}`);
+        let image = images[i];
+        if (await this.isJoinToPrevGroup(image)) {
+          group.images.push(image);
+        } else {
+          this.updateGroup(group);
+          groups.push(group);
+          group = this.createGroups([image], 1)[0];
+        }
+      }
+      this.updateGroup(group);
+      groups.push(group);
+
+      this.sortGroups();
+      this.updateIndex();
+
+      loading.close();
+    },
+
+    // 检查图片第一行的像素值是否相似，如果有明显差异，则拼接到上一图组，否则创建新图组
+    async isJoinToPrevGroup(image) {
+      const { threshold, minHeight } = this.setting.autoJoin;
+      // 如果图片高度小于最小高度，则拼接到上一图组
+      if (image.height < minHeight) return true;
+
+      const { data, info } = await sharp(image.path)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      const length = 4 * info.width;
+      let pixel;
+      for (let i = 0; i < length; i += 4) {
+        const cur = data.slice(i, i + 4);
+        if (pixel && !comparePixels(cur, pixel, threshold)) {
+          return true;
+        }
+        pixel = cur;
+      }
+      return false;
     },
 
     applySplit(groups) {
@@ -1372,7 +1523,7 @@ export default {
         removeItem(this.groups, next);
       } else {
         this.clearSplitLines(next);
-        this.updateGroup(group);
+        this.updateGroup(next);
       }
       this.updateIndex();
       this.setAllSelected(this.groups, false);
@@ -1493,7 +1644,7 @@ export default {
           break;
       }
     },
-    setZoom(zoom) {
+    setZoom(zoom, center = { x: 0, y: 0 }) {
       const { offsetWidth: W, offsetHeight: H } = imagesWrapper;
       const { totalWidth: tw, totalHeight: th } = this.curGroup;
       const { left: ol, top: ot, zoom: oz, minZoom } = this.curGroupState;
@@ -1503,7 +1654,7 @@ export default {
       const w = tw * zoom;
       const h = th * zoom;
       // const center = { x: W * 0.5, y: H * 0.5 };
-      const center = { x: 0, y: 0 };
+      // const center = { x: 0, y: 0 };
       let left, top;
       if (w <= W) {
         left = Math.round((W - w) * 0.5);
@@ -1532,6 +1683,17 @@ export default {
     },
     // END: zoom
 
+    // 图组视图：滚动缩放
+    onMousewheel($event) {
+      const zoom = this.curGroupState.zoom * ($event.deltaY < 0 ? 1.1 : 0.9);
+      const center = {
+        x: $event.pageX,
+        y: $event.pageY - imagesWrapper.getBoundingClientRect().y,
+      };
+      this.setZoom(zoom, center);
+    },
+
+    // 图组视图：拖动
     // START: move
     onStartMove($event) {
       if (
@@ -1829,7 +1991,16 @@ export default {
 
     window.addEventListener("keydown", (e) => {
       if (e.repeat) return;
-      if (e.key === "Escape" && this.curGroup) this.onCloseGroupDetail();
+      // console.log(e.key);
+      if (this.curGroup) {
+        if (e.key === "Escape") this.onCloseGroupDetail();
+        else if (e.code === "Space") this.isSpace = true;
+        else if (e.key === "ArrowLeft" || e.key === "PageUp")
+          this.setCurGroup(this.curGroup.index - 1);
+        else if (e.key === "ArrowRight" || e.key === "PageDown")
+          this.setCurGroup(this.curGroup.index + 1);
+      } else if (isCtrlKey(e) && e.key === "g")
+        this.onApplyJoin("groups", "joinAll");
       else if (isCtrlKey(e) && e.key === "z") this.onUndoSplit();
       else if (e.key === "Alt") this.isAlt = true;
       else if (isCtrlKey(e) && e.key === "o") this.onOpen();
@@ -1840,7 +2011,7 @@ export default {
         if (isCtrlKey(e)) this.onClearList();
         else if (e.altKey) this.removeSelectedImages();
         else this.removeSelectedGroups();
-      } else if (this.curGroup && e.code === "Space") this.isSpace = true;
+      }
     });
     window.addEventListener("keyup", (e) => {
       if (e.key === "Alt") this.isAlt = false;
@@ -1999,6 +2170,7 @@ body,
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 .group-detail {
   position: absolute;

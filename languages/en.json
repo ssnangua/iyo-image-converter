@@ -513,6 +513,11 @@
     "applyToCurrentGroup": "Apply To Current Group",
     "joinSelectedGroups": "Join Selected Groups",
     "joinSelectedImages": "Join Selected Images",
+    "autoJoin": "Auto Join",
+    "autoJoin_desc": "<p>Used for joining manhwa. If the graphic or dialog box is split into two images, they will be auto joined. </p><p>Description: Just for vertical joining, by detecting the pixels of the first row of the image,<br>if there is an obvious difference (the threshold can be adjusted in the Setting), then joined to the previous group.</p><p>Note: This feature is invalid when the original image has white or black borders. </p>",
+    "autoJoinThreshold": "Threshold",
+    "autoJoinMinHeight": "Min Height",
+    "processing": "Processing …",
     "saveSelectedGroups": "Save Selected Groups",
     "saveCurrentGroup": "Save Current Group",
     "saveAll": "Save All",
@@ -547,7 +552,9 @@
       "lock": "Lock a group to make it unmodifiable.",
       "groupView": "Group View",
       "zoom": "Zoom",
-      "move": "Move"
+      "move": "Move",
+      "prevGroup": "Previous Group",
+      "nextGroup": "Next Group"
     }
   },
   "filterTool": {

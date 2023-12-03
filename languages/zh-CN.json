@@ -513,6 +513,11 @@
     "applyToCurrentGroup": "应用到当前图组",
     "joinSelectedGroups": "拼接选中图组",
     "joinSelectedImages": "拼接选中图片",
+    "autoJoin": "智能拼接",
+    "autoJoin_desc": "<p>用于拼接条漫，如果图案或对话框被切分成两张图片，则自动拼接。</p><p>说明：只在垂直拼接下可用，通过检测图片第一行的像素值，<br>如果有明显的差异（可在设置中调整阈值），则拼接到上一图组，<br>否则视为正常切分，不进行拼接。</p><p>注意：如果原图有白边或黑边，该功能无效。</p>",
+    "autoJoinThreshold": "像素阈值",
+    "autoJoinMinHeight": "最小高度",
+    "processing": "处理中 …",
     "saveSelectedGroups": "保存选中图组",
     "saveCurrentGroup": "保存当前图组",
     "saveAll": "保存全部",
@@ -547,7 +552,9 @@
       "lock": "锁定图组使其不可修改",
       "groupView": "图组视图",
       "zoom": "缩放",
-      "move": "移动"
+      "move": "移动",
+      "prevGroup": "上一图组",
+      "nextGroup": "下一图组"
     }
   },
   "filterTool": {
