@@ -451,20 +451,18 @@ export default {
         showError(this.$t("filterTool.invalidOutputFolder"));
         return;
       }
-      const loading = showLoading({
-        lock: true,
-        text: this.$t("filterTool.processing"),
-      });
+      const loadingText = this.$t("filterTool.processing");
+      const loading = showLoading({ lock: true, text: loadingText });
       for (let i = 0, total = batchFiles.length; i < total; i++) {
         const image = batchFiles[i];
         let fileOut = outputFolder
           ? path.join(outputFolder, path.basename(image))
           : image;
         if (!overwrite) fileOut = getOutputPath(fileOut);
-        await this.saveImage(image, fileOut).catch((err) => console.warn(err));
-        loading.setText(
-          this.$t("filterTool.processing") + " " + `${i + 1} / ${total}`
+        await this.saveImage(image, fileOut, null, true).catch((err) =>
+          console.warn(err)
         );
+        loading.setText(`${loadingText} ${i + 1} / ${total}`);
         win.setProgressBar(i / total);
       }
       loading.close();
@@ -493,21 +491,18 @@ export default {
       }
     },
 
-    async loadImage(input) {
+    async loadImage(input, noLoading = false) {
       imgInfo = await getImageInfo(input);
       imgInfo.input = input;
-      const loading = showLoading({
-        lock: true,
-        text: this.$t("filterTool.loading"),
-      });
+      let loading;
+      const loadingText = this.$t("filterTool.loading");
+      if (!noLoading) loading = showLoading({ lock: true, text: loadingText });
       imgInfo.frames = (
         await getFrames(input, {}, ({ cutted, total }) => {
-          loading.setText(
-            this.$t("filterTool.loading") + " " + `${cutted} / ${total}`
-          );
+          if (loading) loading.setText(`${loadingText} ${cutted} / ${total}`);
         })
       ).frames;
-      loading.close();
+      if (loading) loading.close();
       this.frameState = { current: 1, total: imgInfo.pages };
       pixels = await getPixels(
         imgInfo.frames[0],
@@ -699,14 +694,10 @@ export default {
         accept: saveAccept,
       }).then(async ([filePath]) => {
         if (!saveAcceptRule.test(filePath)) filePath += `.${imgInfo.ext}`;
-        const loading = showLoading({
-          lock: true,
-          text: this.$t("filterTool.saving"),
-        });
+        const loadingText = this.$t("filterTool.saving");
+        const loading = showLoading({ lock: true, text: loadingText });
         this.saveImage(imgInfo.input, filePath, ({ total, encoded }) => {
-          loading.setText(
-            this.$t("filterTool.saving") + " " + `${encoded} / ${total}`
-          );
+          loading.setText(`${loadingText} ${encoded} / ${total}`);
         })
           .then(() => loading.close())
           .catch((err) => {
@@ -717,7 +708,7 @@ export default {
       });
     },
 
-    async saveImage(input, fileOut, progress) {
+    async saveImage(input, fileOut, progress, noLoading) {
       const { width, height, pages } = await getImageInfo(input);
       let task;
       if (pages > 1) {
@@ -752,8 +743,8 @@ export default {
         task = sharpToFile({ image }, fileOut);
       }
       return task.then(() => {
-        if (fileOut === imgInfo.input) {
-          this.loadImage(fileOut);
+        if (imgInfo && fileOut === imgInfo.input) {
+          this.loadImage(fileOut, noLoading);
         }
       });
     },
