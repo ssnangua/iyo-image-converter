@@ -407,13 +407,14 @@ export default {
           _sizeMap[icon.size] = true;
         }
         _icons.sort((a, b) => a.icon.size - b.icon.size);
+        const _resized = [];
         const { extractSizes } = this;
         for (let size of extractSizes) {
           if (!_sizeMap[size]) {
             const { icon, image } =
               _icons.find(({ icon }) => icon && icon.size > size) ||
               _icons[_icons.length - 1];
-            _icons.push({
+            _resized.push({
               processed: await processIcon(
                 {
                   ...icon,
@@ -425,6 +426,7 @@ export default {
             });
           }
         }
+        _icons.push(..._resized);
         _icons.sort((a, b) => b.size - a.size);
         await sharpsToIco(
           _icons.map(({ processed }) => processed),
