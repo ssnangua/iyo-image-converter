@@ -1,0 +1,51 @@
+.settings-dialog {
+  max-width: 800px;
+}
+
+.settings-wrapper {
+  height: calc(80vh - 115px);
+  overflow: hidden;
+  border: 1px solid #dcdfe6;
+}
+
+.settings-sider {
+  width: 90px;
+  flex-shrink: 0;
+  background-color: #f2f3f5;
+  border-right: 1px solid #dcdfe6;
+  display: flex;
+  overflow: hidden;
+}
+
+.settings-form-wrapper {
+  padding: 20px;
+  padding-right: 30px;
+
+  & .ant-form-item {
+    margin-bottom: 10px;
+  }
+
+  & .ant-form-item-additional {
+    margin-bottom: 20px;
+  }
+
+  & .ant-divider {
+    margin-top: 0;
+  }
+  & .ant-form-item + .ant-divider {
+    margin-top: 30px;
+  }
+}
+
+.input-drag-enter {
+  background-color: rgb(131, 191, 76, 0.2) !important;
+  border: 1px dashed #83bf4c !important;
+  box-shadow: none !important;
+  z-index: 1000 !important;
+}
+
+.settings-footer {
+  & button + button {
+    margin-left: 10px;
+  }
+}

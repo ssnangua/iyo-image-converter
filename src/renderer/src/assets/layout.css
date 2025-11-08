@@ -1,0 +1,41 @@
+.ant-layout {
+  flex: auto;
+  overflow: hidden;
+}
+
+.ant-layout-header {
+  background-color: #fff;
+  /* border-top: 1px solid #dcdfe6; */
+  border-bottom: 1px solid #dcdfe6;
+  height: 52px;
+  line-height: 52px;
+  padding: 0;
+}
+
+.ant-layout-sider {
+  background-color: #f2f3f5;
+  border-right: 1px solid #dcdfe6;
+  width: 90px;
+  min-width: 90px !important;
+  max-width: 90px !important;
+  overflow: auto;
+  display: flex;
+  overflow: hidden;
+}
+.ant-layout-sider-children {
+  flex: auto;
+  display: flex;
+}
+
+.ant-layout-content {
+  background-color: #fff;
+  display: flex;
+}
+
+.ant-layout-footer {
+  background-color: #f2f3f5;
+  border-top: 1px solid #dcdfe6;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 10px;
+}

@@ -1,0 +1,55 @@
+appId: com.ssnangua.iyoimageconverter
+productName: 哎哟图片转换器
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml,pnpm-workspace.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!{jest.config.ts,cspell.json,commitlint.config.js}'
+  - '!{packages,scripts,test,coverage,.cspell}/**/*'
+  - '!node_modules/{gifenc,upng-js,bmp-js,decode-ico,ico-endec,decode-bmp}/**/*'
+  - from: node_modules/@ssnangua
+    to: node_modules/@ssnangua
+    filter: '!{**/__tests__,**/src,**/tsconfig.json}'
+  - '!settings.json'
+  - '!.resources/**/*'
+asar: true
+asarUnpack:
+  - resources/**
+electronLanguages: [en-US, zh-CN]
+win:
+  executableName: 哎哟图片转换器
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: false
+dmg:
+  artifactName: ${name}-${version}.${ext}
+linux:
+  target:
+    - AppImage
+    - snap
+    - deb
+  maintainer: electronjs.org
+  category: Utility
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
+publish:
+  provider: generic
+  url: https://example.com/auto-updates
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/

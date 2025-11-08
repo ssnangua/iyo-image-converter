@@ -1,0 +1,30 @@
+.sider-menu {
+  flex: auto;
+  display: flex;
+  flex-flow: column;
+}
+
+.menu-list {
+  width: 90px;
+  flex: auto;
+  display: flex;
+  flex-flow: column;
+}
+
+.menu-item {
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e4e5e7;
+  }
+
+  &.selected {
+    font-weight: bold;
+  }
+}
+
+.rcs-custom-scroll-handle {
+  pointer-events: all;
+}

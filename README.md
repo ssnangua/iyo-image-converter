@@ -1,85 +1,44 @@
-# iYo Image Converter | 哎哟图片转换器 1.4.3
+# 哎哟图片转换器 V2
 
-A free native image converter | 一个免费的本地图片转换工具
+基于 Electron + React + Ant Design 重写，目前只实现了图片格式转换。
 
-<img src="screenshots/en_convert.jpg" width="600" />
-
-Base on [sharp](https://sharp.pixelplumbing.com/) and [NW.js](https://nwjs.io/), support Windows and Mac.
-
-[Download](https://github.com/ssnangua/iyo-image-converter/releases) | [Screenshots](screenshots/en.md) | English Document | [中文文档](README_zh.md)
-
-## Features
-
-- Support image formats: `.png`,`.jpg`,`.jpeg`,`.webp`,`.gif`,`.tif`,`.tiff`,`.avif`,`.heif`,`.bmp`,`.ico`,`.svg`, animated GIF/WebP/APNG
-- Convert / Tiny image
-- Resize / Rotate image
-- Add watermark
-  - Support text/image watermark
-  - Support fixed/random position or repeat
-  - Support watermark opacity and rotate
-  - Support animated image
-- Crop & Rotate Tool
-  - Crop image
-  - Rotate image
-  - Support animated image
-  - Multi-images editing
-- Join & Split Tool
-  - Join multiple images into one image (horizontal or vertical)
-  - Or (and) split a image into multiple images (horizontal or vertical, average split or fixed size or manually mark the split positions)
-  - Support batch processing
-- Filter Tool
-  - Support animated image
-  - Support batch processing
-  - Support custom filters
-- Anime Tool
-  - Create animated image
-  - Make animated image faster/slower or reverse
-  - Add text
-  - Extract frames
-- ICO Tool
-  - Create multi-size `.ico` image
-  - Extract frames
-  - Extract `.ico` image from `.exe`,`.dll`,`.ocx`,`.cpl` file
-- PDF Tool
-  - Export images from a PDF file
-  - Generate a PDF file from images
-- Mirage Tank
-  - A simple way to generate a mirage-tank image
-
-## Custom Filter
-
-The filter files are in the `root/filters/` directory, and you can write your own filters. See [Custom Filter](./Custom-Filter.md).
-
-## Development
+## 项目结构
 
 ```bash
-# install (Windows)
-npm install
-# install (Mac)
-npm install --build-from-source
-
-# rebuild sharp
-cd node_modules/sharp
-npx nw-gyp configure --target=0.68.1
-npx nw-gyp build --target=0.68.1
-
-# dev (root directory)
-npm run dev
-
-# build (root directory)
-npm run build
-# after build (Mac)
-chmod +x dist-nw/iyo-image-converter-${version}-mac-x64/iYo\ Image\ Converter.app/Contents/Resources/app.nw/bin/*
+├── 📁pakcages                # 依赖包
+├── 📁scripts                 # 脚本
+├── 📁src                     # 源码目录
+│   ├── 📁common              # 公共模块
+│   ├── 📁ipc                 # 通信模块
+│   ├── 📁main                # 主进程
+│   ├── 📁preload             # 预加载脚本
+│   ├── 📁renderer/src        # 渲染进程
+│   │   ├── 📁assets          # 资源样式
+│   │   ├── 📁common          # 公共模块（渲染进程）
+│   │   ├── 📁components      # 组件
+│   │   │   ├── 📁form        # Schema表单
+│   │   │   └── 📁table       # 虚拟表格
+│   │   └── 📁stores          # 状态管理
+│   ├── 📁settings            # 设置
+│   │   └── 📁schemas         # 设置Schema
+│   └── 📁worker              # 工作线程
+└── ...
 ```
 
-## Reference
+## 开发
 
-Icons referenced from:
+```bash
+# 初始化
+pnpm install
 
-- [iconfont](https://www.iconfont.cn/)
+# 构建依赖包
+pnpm build:packages
 
-Preset filters referenced from:
+# 开发
+pnpm dev
 
-- [glfx.js](https://github.com/evanw/glfx.js) - An image effects library for JavaScript.
-- [Konva](https://github.com/konvajs/konva) - A HTML5 2d canvas js library.
-- [Pixels.JS](https://github.com/silvia-odwyer/pixels.js) - An image filtering library with over 70 photo filters.
+# 构建
+pnpm build:win
+pnpm build:mac
+pnpm build:linux
+```

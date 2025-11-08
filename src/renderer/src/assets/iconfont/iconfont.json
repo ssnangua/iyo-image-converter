@@ -1,0 +1,429 @@
+{
+  "id": "3551021",
+  "name": "image-converter",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "1842058",
+      "name": "下箭头",
+      "font_class": "arrow-down",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "1842059",
+      "name": "上箭头",
+      "font_class": "arrow-up",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
+      "icon_id": "21240231",
+      "name": "排序（降序）",
+      "font_class": "sort-desc",
+      "unicode": "e602",
+      "unicode_decimal": 58882
+    },
+    {
+      "icon_id": "21240244",
+      "name": "排序（升序）",
+      "font_class": "sort-asc",
+      "unicode": "e603",
+      "unicode_decimal": 58883
+    },
+    {
+      "icon_id": "21240245",
+      "name": "排序（默认）",
+      "font_class": "sort-default",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    },
+    {
+      "icon_id": "40161020",
+      "name": "重置",
+      "font_class": "reset",
+      "unicode": "e616",
+      "unicode_decimal": 58902
+    },
+    {
+      "icon_id": "15838487",
+      "name": "打开文件夹",
+      "font_class": "open-dir",
+      "unicode": "e670",
+      "unicode_decimal": 58992
+    },
+    {
+      "icon_id": "34453015",
+      "name": "信息",
+      "font_class": "info",
+      "unicode": "e83d",
+      "unicode_decimal": 59453
+    },
+    {
+      "icon_id": "15838497",
+      "name": "锁定",
+      "font_class": "lock",
+      "unicode": "e676",
+      "unicode_decimal": 58998
+    },
+    {
+      "icon_id": "15838546",
+      "name": "解锁",
+      "font_class": "unlock",
+      "unicode": "e682",
+      "unicode_decimal": 59010
+    },
+    {
+      "icon_id": "29523284",
+      "name": "拖放",
+      "font_class": "drag-drop",
+      "unicode": "e705",
+      "unicode_decimal": 59141
+    },
+    {
+      "icon_id": "5831385",
+      "name": "详情",
+      "font_class": "detail",
+      "unicode": "e66b",
+      "unicode_decimal": 58987
+    },
+    {
+      "icon_id": "12881316",
+      "name": "切分",
+      "font_class": "paging",
+      "unicode": "e83c",
+      "unicode_decimal": 59452
+    },
+    {
+      "icon_id": "12719933",
+      "name": "分页",
+      "font_class": "split",
+      "unicode": "e60d",
+      "unicode_decimal": 58893
+    },
+    {
+      "icon_id": "12719935",
+      "name": "合并",
+      "font_class": "join",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    },
+    {
+      "icon_id": "16220418",
+      "name": "横竖屏",
+      "font_class": "hv-screen",
+      "unicode": "e613",
+      "unicode_decimal": 58899
+    },
+    {
+      "icon_id": "29522624",
+      "name": "清空",
+      "font_class": "clear",
+      "unicode": "e67a",
+      "unicode_decimal": 59002
+    },
+    {
+      "icon_id": "29522617",
+      "name": "移除",
+      "font_class": "remove",
+      "unicode": "e679",
+      "unicode_decimal": 59001
+    },
+    {
+      "icon_id": "20402171",
+      "name": "配置",
+      "font_class": "options",
+      "unicode": "e6ef",
+      "unicode_decimal": 59119
+    },
+    {
+      "icon_id": "14425284",
+      "name": "滤镜",
+      "font_class": "filter",
+      "unicode": "e66e",
+      "unicode_decimal": 58990
+    },
+    {
+      "icon_id": "634575",
+      "name": "图片",
+      "font_class": "image",
+      "unicode": "e702",
+      "unicode_decimal": 59138
+    },
+    {
+      "icon_id": "634577",
+      "name": "多张图片",
+      "font_class": "images",
+      "unicode": "e704",
+      "unicode_decimal": 59140
+    },
+    {
+      "icon_id": "4767078",
+      "name": "加粗",
+      "font_class": "bold",
+      "unicode": "e7f7",
+      "unicode_decimal": 59383
+    },
+    {
+      "icon_id": "4767087",
+      "name": "斜体",
+      "font_class": "italic",
+      "unicode": "e7fb",
+      "unicode_decimal": 59387
+    },
+    {
+      "icon_id": "16711147",
+      "name": "上",
+      "font_class": "up",
+      "unicode": "e615",
+      "unicode_decimal": 58901
+    },
+    {
+      "icon_id": "16711165",
+      "name": "左",
+      "font_class": "left",
+      "unicode": "e61b",
+      "unicode_decimal": 58907
+    },
+    {
+      "icon_id": "16711167",
+      "name": "右",
+      "font_class": "right",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    },
+    {
+      "icon_id": "16711154",
+      "name": "下",
+      "font_class": "down",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "29522606",
+      "name": "删除",
+      "font_class": "delete",
+      "unicode": "e677",
+      "unicode_decimal": 58999
+    },
+    {
+      "icon_id": "29522618",
+      "name": "添加",
+      "font_class": "add",
+      "unicode": "e678",
+      "unicode_decimal": 59000
+    },
+    {
+      "icon_id": "29522733",
+      "name": "最后面",
+      "font_class": "last",
+      "unicode": "e68a",
+      "unicode_decimal": 59018
+    },
+    {
+      "icon_id": "29522734",
+      "name": "最前面",
+      "font_class": "first",
+      "unicode": "e68c",
+      "unicode_decimal": 59020
+    },
+    {
+      "icon_id": "29522735",
+      "name": "播放",
+      "font_class": "play",
+      "unicode": "e68d",
+      "unicode_decimal": 59021
+    },
+    {
+      "icon_id": "29522737",
+      "name": "上一个",
+      "font_class": "prev",
+      "unicode": "e68e",
+      "unicode_decimal": 59022
+    },
+    {
+      "icon_id": "29522738",
+      "name": "暂停",
+      "font_class": "pause",
+      "unicode": "e68f",
+      "unicode_decimal": 59023
+    },
+    {
+      "icon_id": "29522739",
+      "name": "下一个",
+      "font_class": "next",
+      "unicode": "e690",
+      "unicode_decimal": 59024
+    },
+    {
+      "icon_id": "29523867",
+      "name": "空格",
+      "font_class": "space",
+      "unicode": "e775",
+      "unicode_decimal": 59253
+    },
+    {
+      "icon_id": "26525875",
+      "name": "鼠标滚轮",
+      "font_class": "mouse-wheel",
+      "unicode": "e6bd",
+      "unicode_decimal": 59069
+    },
+    {
+      "icon_id": "26525876",
+      "name": "鼠标右键",
+      "font_class": "mouse-right",
+      "unicode": "e6be",
+      "unicode_decimal": 59070
+    },
+    {
+      "icon_id": "26525877",
+      "name": "鼠标左键",
+      "font_class": "mouse-left",
+      "unicode": "e6bf",
+      "unicode_decimal": 59071
+    },
+    {
+      "icon_id": "27107617",
+      "name": "提示",
+      "font_class": "tips",
+      "unicode": "e661",
+      "unicode_decimal": 58977
+    },
+    {
+      "icon_id": "5532550",
+      "name": "预览",
+      "font_class": "preview",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "22273256",
+      "name": "填满",
+      "font_class": "zoom-fit",
+      "unicode": "e69f",
+      "unicode_decimal": 59039
+    },
+    {
+      "icon_id": "13343178",
+      "name": "居中",
+      "font_class": "position-center",
+      "unicode": "e63d",
+      "unicode_decimal": 58941
+    },
+    {
+      "icon_id": "9230689",
+      "name": "1:1",
+      "font_class": "zoom-1",
+      "unicode": "e912",
+      "unicode_decimal": 59666
+    },
+    {
+      "icon_id": "13691562",
+      "name": "缩小",
+      "font_class": "zoom-out",
+      "unicode": "e886",
+      "unicode_decimal": 59526
+    },
+    {
+      "icon_id": "13691563",
+      "name": "放大",
+      "font_class": "zoom-in",
+      "unicode": "e887",
+      "unicode_decimal": 59527
+    },
+    {
+      "icon_id": "7008886",
+      "name": "中心",
+      "font_class": "center",
+      "unicode": "e6df",
+      "unicode_decimal": 59103
+    },
+    {
+      "icon_id": "1410287",
+      "name": "裁切",
+      "font_class": "crop",
+      "unicode": "e650",
+      "unicode_decimal": 58960
+    },
+    {
+      "icon_id": "490124",
+      "name": "翻转",
+      "font_class": "flip",
+      "unicode": "eb63",
+      "unicode_decimal": 60259
+    },
+    {
+      "icon_id": "6988143",
+      "name": "裁切和旋转",
+      "font_class": "crop-rotate",
+      "unicode": "eba1",
+      "unicode_decimal": 60321
+    },
+    {
+      "icon_id": "12309969",
+      "name": "网格",
+      "font_class": "grid",
+      "unicode": "e838",
+      "unicode_decimal": 59448
+    },
+    {
+      "icon_id": "14465202",
+      "name": "旋转180°",
+      "font_class": "rotate-180",
+      "unicode": "e6a8",
+      "unicode_decimal": 59048
+    },
+    {
+      "icon_id": "19859574",
+      "name": "旋转",
+      "font_class": "rotate",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "20835415",
+      "name": "右旋转",
+      "font_class": "rotate-right",
+      "unicode": "e683",
+      "unicode_decimal": 59011
+    },
+    {
+      "icon_id": "20835416",
+      "name": "左旋转",
+      "font_class": "rotate-left",
+      "unicode": "e684",
+      "unicode_decimal": 59012
+    },
+    {
+      "icon_id": "5669170",
+      "name": "打开文件",
+      "font_class": "open-file",
+      "unicode": "e643",
+      "unicode_decimal": 58947
+    },
+    {
+      "icon_id": "1174299",
+      "name": "设置",
+      "font_class": "setting",
+      "unicode": "e660",
+      "unicode_decimal": 58976
+    },
+    {
+      "icon_id": "212328",
+      "name": "开始",
+      "font_class": "start",
+      "unicode": "e74f",
+      "unicode_decimal": 59215
+    },
+    {
+      "icon_id": "6145683",
+      "name": "停止",
+      "font_class": "stop",
+      "unicode": "e68b",
+      "unicode_decimal": 59019
+    }
+  ]
+}

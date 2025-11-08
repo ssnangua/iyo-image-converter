@@ -1,0 +1,80 @@
+.menu-item,
+.output-column .type {
+  &:has(.General) {
+    color: #555555;
+  }
+  &:has(.TINY) {
+    color: #777777;
+  }
+  &:has(.JPEG) {
+    color: #139b81;
+  }
+  &:has(.PNG) {
+    color: #3aa3f2;
+  }
+  &:has(.WEBP) {
+    color: #49af59;
+  }
+  &:has(.GIF) {
+    color: #ec7421;
+  }
+  &:has(.APNG) {
+    color: #3aa3f2;
+  }
+  &:has(.ICO) {
+    color: #00488f;
+  }
+  &:has(.BMP) {
+    color: #619aa6;
+  }
+  &:has(.TIFF) {
+    color: #657f6c;
+  }
+  &:has(.AVIF) {
+    color: #546a7a;
+  }
+  &:has(.HEIF) {
+    color: #045dd2;
+  }
+}
+
+.menu-item.selected {
+  color: #ffffff !important;
+
+  &:has(.General) {
+    background-color: #555555;
+  }
+  &:has(.TINY) {
+    background-color: #777777;
+  }
+  &:has(.JPEG) {
+    background-color: #139b81;
+  }
+  &:has(.PNG) {
+    background-color: #3aa3f2;
+  }
+  &:has(.WEBP) {
+    background-color: #49af59;
+  }
+  &:has(.GIF) {
+    background-color: #ec7421;
+  }
+  &:has(.APNG) {
+    background-color: #3aa3f2;
+  }
+  &:has(.ICO) {
+    background-color: #00488f;
+  }
+  &:has(.BMP) {
+    background-color: #619aa6;
+  }
+  &:has(.TIFF) {
+    background-color: #657f6c;
+  }
+  &:has(.AVIF) {
+    background-color: #546a7a;
+  }
+  &:has(.HEIF) {
+    background-color: #045dd2;
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@ssnangua/sharp-apng",
+  "version": "1.0.0",
+  "description": "APNG(animated PNG) encoder and decoder for sharp base on upng-js.",
+  "type": "module",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs.js",
+      "import": "./dist/index.esm.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.17.1",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "gifenc": "^1.0.3",
+    "sharp": "*",
+    "upng-js": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/upng-js": "^2.1.5",
+    "file-type": "^16.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

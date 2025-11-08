@@ -1,0 +1,20 @@
+.control-bar {
+  padding: 0 10px;
+
+  & .ant-btn {
+    padding: 8px;
+    color: #606266 !important;
+  }
+  & .stop-btn {
+    font-weight: bold;
+    color: #f56c6c !important;
+  }
+  & .start-btn {
+    font-weight: bold;
+    color: #409eff !important;
+  }
+
+  & button[disabled] {
+    opacity: 0.5;
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "@ssnangua/sharp-bmp",
+  "version": "1.0.0",
+  "description": "BMP encoder and decoder for sharp base on bmp-js.",
+  "type": "module",
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs.js",
+      "import": "./dist/index.esm.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.17.1",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "bmp-js": "^0.1.0",
+    "sharp": "*"
+  },
+  "devDependencies": {
+    "@types/bmp-js": "^0.1.2",
+    "file-type": "^16.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
