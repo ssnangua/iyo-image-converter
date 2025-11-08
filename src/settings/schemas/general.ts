@@ -66,8 +66,8 @@ export const GeneralSchema: Schema = {
       component: 'Slider',
       step: 1,
       minimum: 1,
-      maximum: 16,
-      default: 10
+      maximum: 1,
+      default: 1
     },
     timeout: {
       title: '超时时间',

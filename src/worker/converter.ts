@@ -79,7 +79,7 @@ function run(tasks: Task[]) {
   queue = tasks
   runningTasks = 0
   isStop = false
-  const concurrently = sharpExtra.sharp.concurrency()
+  const concurrently = tasks[0].generalOptions.concurrently
   for (let i = 0; i < concurrently; i++) {
     runningTasks += 1
     runNextTask()

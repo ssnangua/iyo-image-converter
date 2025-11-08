@@ -43,7 +43,7 @@ export default {
       { value: "revert", name: "⏪ 回滚：代码回滚" },
       { value: "style", name: "🎨 样式：格式调整（不影响代码运行）" }
     ],
-    scopes: ["root", "main", "renderer", "packages", "tools", "utils"],
+    scopes: ["root", "main", "renderer", "worker", "packages", "tools", "utils"],
     allowCustomScopes: true,
     skipQuestions: ["body", "footerPrefix", "footer", "breaking"], // 跳过“详细描述”和“底部信息”
     messages: {
